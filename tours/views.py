@@ -387,12 +387,6 @@ def plan_trip(request):
         form.initial["message"] = (form.initial.get("message", "") + f"\nPreferred month: {request.GET['month']}").strip()
     if request.GET.get("trip") and not form.is_bound:
         form.initial["interests_list"] = [request.GET["trip"]]
-    people = request.GET.get("people", "")[:5]
-    if people and not form.is_bound:
-        if people.isdigit():
-            form.initial["adults"] = int(people)
-        else:
-            form.initial["message"] = (form.initial.get("message", "") + f"\nTravellers: {people}").strip()
     return render(request, "tours/plan_trip.html", {"form": form, "tour": tour})
 
 

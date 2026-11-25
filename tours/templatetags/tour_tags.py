@@ -110,17 +110,6 @@ def rich(text):
 
 
 @register.filter
-def cat_icon(category):
-    """Icon id for a category in the sidebar menu."""
-    slug = getattr(category, "slug", "") or ""
-    for key, icon in (("kilimanjaro-and", "route"), ("kilimanjaro", "mountain"), ("safari", "paw"),
-                      ("zanzibar", "wave"), ("beach", "wave"), ("day", "sun"), ("trek", "flag")):
-        if key in slug:
-            return icon
-    return "compass"
-
-
-@register.filter
 def accent(text, word):
     """Wrap the first occurrence of `word` in <em> for an elegant italic accent in headings."""
     text = str(text or "")

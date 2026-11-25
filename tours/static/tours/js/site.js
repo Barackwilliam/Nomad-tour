@@ -3,6 +3,23 @@
   "use strict";
   var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  // ---------------------------------------------------------------- Header: transparent over the hero, solid on scroll
+  var header = document.getElementById("header");
+  var masthead = document.getElementById("masthead");
+  var overHero = document.body.classList.contains("has-hero");
+  if (header && overHero) {
+    var ticking = false;
+    var onScroll = function () {
+      ticking = false;
+      var stuck = window.scrollY > (masthead ? masthead.offsetHeight + 40 : 160);
+      header.classList.toggle("is-stuck", stuck);
+    };
+    window.addEventListener("scroll", function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(onScroll); }
+    }, { passive: true });
+    onScroll();
+  }
+
   // ---------------------------------------------------------------- Land exactly on #book / #dates even if the page
   // grew while loading (photos, fonts), e.g. when coming from a group departure link.
   if (location.hash && /^#[\w-]+$/.test(location.hash)) {
@@ -12,52 +29,24 @@
     });
   }
 
-  // ---------------------------------------------------------------- Sidebar menu (drawer on phones and tablets)
-  var side = document.getElementById("side");
-  var openBtn = document.getElementById("side-open");
-  var closeBtn = document.getElementById("side-close");
-  var overlay = document.getElementById("side-overlay");
-  if (side && openBtn) {
-    var setOpen = function (open) {
-      side.classList.toggle("is-open", open);
-      if (overlay) overlay.hidden = !open;
-      openBtn.setAttribute("aria-expanded", open ? "true" : "false");
-      document.body.classList.toggle("side-open", open);
-      if (open && closeBtn) closeBtn.focus();
-    };
-    openBtn.addEventListener("click", function () { setOpen(true); });
-    if (closeBtn) closeBtn.addEventListener("click", function () { setOpen(false); openBtn.focus(); });
-    if (overlay) overlay.addEventListener("click", function () { setOpen(false); });
-    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && side.classList.contains("is-open")) setOpen(false); });
-    side.querySelectorAll(".side__toggle").forEach(function (btn) {
+  // ---------------------------------------------------------------- Mobile menu
+  var burger = document.getElementById("burger");
+  var nav = document.getElementById("nav");
+  if (burger && nav) {
+    burger.addEventListener("click", function () {
+      nav.style.setProperty("--nav-top", header.getBoundingClientRect().bottom + "px");
+      var open = nav.classList.toggle("is-open");
+      burger.setAttribute("aria-expanded", open ? "true" : "false");
+      header.classList.toggle("menu-open", open);
+      document.body.classList.toggle("nav-open", open);
+    });
+    nav.querySelectorAll(".nav__toggle").forEach(function (btn) {
       btn.addEventListener("click", function () {
-        var fly = btn.parentElement.querySelector(".fly");
-        var open = fly.classList.toggle("is-open");
+        var drop = btn.parentElement.querySelector(".drop");
+        var open = drop.classList.toggle("is-open");
         btn.setAttribute("aria-expanded", open ? "true" : "false");
       });
     });
-  }
-
-  // ---------------------------------------------------------------- Dropdown photos load only when a menu is opened
-  document.querySelectorAll(".side__item.has-fly").forEach(function (item) {
-    var load = function () {
-      item.querySelectorAll("img[data-src]").forEach(function (im) {
-        if (im.dataset.srcset) im.srcset = im.dataset.srcset;
-        im.src = im.dataset.src;
-        im.removeAttribute("data-src");
-      });
-    };
-    item.addEventListener("mouseenter", load, { once: true });
-    item.addEventListener("focusin", load, { once: true });
-  });
-
-  // ---------------------------------------------------------------- Desktop bar: a bit more solid after scrolling
-  if (side) {
-    var tick = false;
-    window.addEventListener("scroll", function () {
-      if (tick) return; tick = true;
-      requestAnimationFrame(function () { tick = false; side.classList.toggle("is-scrolled", window.scrollY > 40); });
-    }, { passive: true });
   }
 
   // ---------------------------------------------------------------- Hero slideshow (extra photos load after the page)
@@ -80,8 +69,6 @@
         if (dots[current]) dots[current].classList.remove("is-active");
         current = i;
         slides[current].classList.add("is-active");
-        var num = hero.querySelector("[data-hero-num]");
-        if (num) num.textContent = (current + 1 < 10 ? "0" : "") + (current + 1);
         if (dots[current]) { void dots[current].offsetWidth; dots[current].classList.add("is-active"); }
       };
       var next = function () { show((current + 1) % slides.length); };
