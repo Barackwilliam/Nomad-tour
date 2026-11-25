@@ -77,7 +77,7 @@ class SiteSettingsAdmin(ModelAdmin):
         ("Home page", {
             "classes": ["tab"],
             "fields": (
-                "hero_title", "hero_subtitle", "hero_image", "intro_title", "intro_text",
+                "hero_title", "hero_subtitle", ("hero_image", "hero_image_2", "hero_image_3"), "intro_title", "intro_text",
                 ("founded_year", "stat_travellers"), ("stat_summits", "stat_rating"), "cta_image",
             ),
         }),

@@ -13,6 +13,7 @@
       {% for c in categories %}<a href="{% url 'tour_list' %}?category={{ c.slug }}" class="pill{% if category_filter.slug == c.slug %} is-active{% endif %}">{{ c.label }}</a>{% endfor %}
     </nav>
     {% include "tours/partials/filters.html" with show_search=True %}
+    <h2 class="sr-only">Tour packages</h2>
     <p class="result-count">{{ tours|length }} trip{{ tours|length|pluralize }}</p>
     <div class="grid grid--cards">
       {% for t in tours %}{% include "tours/partials/tour_card.html" %}{% empty %}

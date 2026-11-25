@@ -1,0 +1,15 @@
+{% load tour_tags %}<a class="poster" href="{{ t.get_absolute_url }}" data-cat="{{ t.category.slug }}">
+  {% picture t.image alt=t.title sizes="(min-width: 1140px) 400px, (min-width: 760px) 45vw, 82vw" width=600 height=800 %}
+  <span class="poster__top">
+    <span class="poster__chip"><svg class="i"><use href="#i-clock"/></svg>{{ t.short_duration }}</span>
+    {% if t.is_group %}<span class="poster__chip poster__chip--accent">Group joining</span>{% elif t.level == 'luxury' %}<span class="poster__chip poster__chip--accent">Luxury</span>{% endif %}
+  </span>
+  <span class="poster__body">
+    <span class="poster__cat">{{ t.category.name }}</span>
+    <span class="poster__title">{{ t.title }}</span>
+    <span class="poster__foot">
+      <span class="poster__price">{% if t.price_from %}From <strong>{{ t.price_from|money }}</strong>{% else %}<strong>Price on request</strong>{% endif %}</span>
+      <span class="poster__go" aria-hidden="true"><svg class="i"><use href="#i-arrow"/></svg></span>
+    </span>
+  </span>
+</a>

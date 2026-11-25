@@ -5,7 +5,7 @@ from urllib.parse import quote
 from django.conf import settings
 from django.contrib import messages
 from django.core.mail import send_mail
-from django.db.models import Min, Q
+from django.db.models import F, Min, Q
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -13,6 +13,8 @@ from django.views.decorators.cache import cache_control
 from django.views.decorators.http import require_GET
 
 from . import seo
+from .cache import cached
+from .seasons import SEASONS
 from .forms import EnquiryForm
 from .models import FAQ, Category, GroupDeparture, Page, SiteSettings, Testimonial, Tour
 
@@ -98,31 +100,40 @@ def handle_enquiry(request, source, tour=None, departure=None):
 # Pages
 # ---------------------------------------------------------------------------
 def home(request):
-    featured = list(Tour.objects.published().filter(is_featured=True).select_related("category").order_by("order")[:12])
-    if len(featured) < 6:
-        featured = list(Tour.objects.published().select_related("category")[:12])
     site = SiteSettings.get()
-    departures = (
-        GroupDeparture.objects.upcoming()
-        .filter(start_date__year=site.departures_year)
-        .select_related("tour", "tour__category")[:6]
-    )
-    categories = Category.objects.filter(is_active=True).annotate(min_price=Min("tours__price_from"))
-    return render(
-        request,
-        "tours/home.html",
-        {
+
+    def load():
+        featured = list(
+            Tour.objects.published().filter(is_featured=True).select_related("category").order_by("order")[:12]
+        )
+        if len(featured) < 6:
+            featured = list(Tour.objects.published().select_related("category")[:12])
+        return {
             "featured": featured,
             "featured_categories": sorted({t.category for t in featured}, key=lambda c: c.order),
-            "categories": categories,
-            "testimonials": Testimonial.objects.filter(is_published=True)[:9],
-            "faqs": FAQ.objects.filter(show_on_home=True)[:8],
-            "departures": departures,
-            "guides": Page.objects.filter(is_published=True, kind="guide").order_by("-created_at")[:3],
+            "categories": list(
+                Category.objects.filter(is_active=True).annotate(min_price=Min("tours__price_from"))
+            ),
+            "testimonials": list(Testimonial.objects.filter(is_published=True)[:9]),
+            "faqs": list(FAQ.objects.filter(show_on_home=True)[:8]),
+            "departures": list(
+                GroupDeparture.objects.upcoming()
+                .filter(start_date__year=site.departures_year)
+                .select_related("tour", "tour__category")[:6]
+            ),
+            "guides": list(Page.objects.filter(is_published=True, kind="guide").order_by("-created_at")[:3]),
+        }
+
+    context = dict(cached("home", load))
+    context.update(
+        {
             "months": _upcoming_months(),
+            "seasons": SEASONS,
             "ld_org": seo.organization(site),
-        },
+            "ld_faq": seo.faq_page(context["faqs"]),
+        }
     )
+    return render(request, "tours/home.html", context)
 
 
 def _upcoming_months(count=18):
@@ -136,7 +147,7 @@ def _upcoming_months(count=18):
 
 def _filter_tours(request, qs):
     active = {}
-    q = request.GET.get("q", "").strip()
+    q = request.GET.get("q", "").strip()[:80]
     if q:
         qs = qs.filter(Q(title__icontains=q) | Q(summary__icontains=q) | Q(destinations__icontains=q))
         active["q"] = q
@@ -155,56 +166,76 @@ def _filter_tours(request, qs):
         active["level"] = level
     sort = request.GET.get("sort")
     if sort == "price":
-        qs = qs.order_by("price_from")
+        qs = qs.order_by(F("price_from").asc(nulls_last=True))
     elif sort == "days":
         qs = qs.order_by("duration_days")
     return qs, active
 
 
+def _query_key(request, *names):
+    return "&".join(f"{n}={request.GET.get(n, '')}" for n in names)
+
+
 def tour_list(request):
-    qs = Tour.objects.published().select_related("category")
-    cat = request.GET.get("category")
-    category = None
-    if cat:
-        category = Category.objects.filter(slug=cat, is_active=True).first()
-        if category:
-            qs = qs.filter(category=category)
-    qs, active = _filter_tours(request, qs)
-    return render(
-        request,
-        "tours/tour_list.html",
-        {
-            "tours": qs,
+    def load():
+        qs = Tour.objects.published().select_related("category")
+        category = None
+        if request.GET.get("category"):
+            category = Category.objects.filter(slug=request.GET["category"], is_active=True).first()
+            if category:
+                qs = qs.filter(category=category)
+        qs, active = _filter_tours(request, qs)
+        return {
+            "tours": list(qs),
             "active": active,
             "category_filter": category,
-            "categories": Category.objects.filter(is_active=True),
+            "categories": list(Category.objects.filter(is_active=True)),
+        }
+
+    if request.GET.get("q"):
+        data = load()  # free-text searches are not worth caching
+    else:
+        data = cached("tours?" + _query_key(request, "category", "days", "style", "level", "sort"), load)
+    context = dict(data)
+    context.update(
+        {
             "duration_filters": [(k, label) for k, label, _ in DURATION_FILTERS],
             "levels": [c for c in Tour.LEVEL_CHOICES if c[0]],
-        },
+        }
     )
+    return render(request, "tours/tour_list.html", context)
 
 
 def category_detail(request, slug):
-    category = get_object_or_404(Category, slug=slug, is_active=True)
-    qs = category.tours.filter(is_published=True).select_related("category")
-    qs, active = _filter_tours(request, qs)
-    levels_present = set(category.tours.filter(is_published=True).values_list("level", flat=True))
-    faqs = list(FAQ.objects.filter(group=_faq_group(category))[:6])
-    return render(
-        request,
-        "tours/category.html",
-        {
+    def load():
+        category = Category.objects.filter(slug=slug, is_active=True).first()
+        if category is None:
+            return None
+        qs = category.tours.filter(is_published=True).select_related("category")
+        qs, active = _filter_tours(request, qs)
+        levels_present = set(category.tours.filter(is_published=True).values_list("level", flat=True))
+        return {
             "category": category,
-            "tours": qs,
+            "tours": list(qs),
             "active": active,
-            "duration_filters": [(k, label) for k, label, _ in DURATION_FILTERS],
             "levels": [c for c in Tour.LEVEL_CHOICES if c[0] and c[0] in levels_present],
-            "faqs": faqs,
-            "ld_list": seo.item_list(qs),
-            "ld_faq": seo.faq_page(faqs),
+            "faqs": list(FAQ.objects.filter(group=_faq_group(category))[:6]),
+        }
+
+    data = cached(f"cat:{slug}?" + _query_key(request, "days", "style", "level", "sort"), load)
+    if data is None:
+        raise Http404
+    category = data["category"]
+    context = dict(data)
+    context.update(
+        {
+            "duration_filters": [(k, label) for k, label, _ in DURATION_FILTERS],
+            "ld_list": seo.item_list(data["tours"]),
+            "ld_faq": seo.faq_page(data["faqs"]),
             "ld_crumbs": seo.breadcrumbs([(category.name, category.get_absolute_url())]),
-        },
+        }
     )
+    return render(request, "tours/category.html", context)
 
 
 def _faq_group(category):
@@ -219,49 +250,66 @@ def _faq_group(category):
 
 
 def tour_detail(request, category_slug, slug):
-    tour = get_object_or_404(
-        Tour.objects.select_related("category").prefetch_related("days", "prices", "gallery"),
-        slug=slug,
-        is_published=True,
-    )
+    def load():
+        tour = (
+            Tour.objects.select_related("category")
+            .prefetch_related("days", "prices", "gallery")
+            .filter(slug=slug, is_published=True)
+            .first()
+        )
+        if tour is None:
+            return None
+        related = Tour.objects.published().filter(category=tour.category).exclude(pk=tour.pk).select_related("category")
+        return {
+            "tour": tour,
+            "related": sorted(related, key=lambda t: abs(t.duration_days - tour.duration_days))[:3],
+            "departures": list(tour.departures.upcoming()[:6]),
+        }
+
+    data = cached(f"tour:{slug}", load)
+    if data is None:
+        raise Http404
+    tour = data["tour"]
     if tour.category.slug != category_slug:
         return redirect(tour.get_absolute_url(), permanent=True)
     form, response = handle_enquiry(request, "tour", tour=tour)
     if response:
         return response
-    related = (
-        Tour.objects.published().filter(category=tour.category).exclude(pk=tour.pk).select_related("category")
-    )
-    related = sorted(related, key=lambda t: abs(t.duration_days - tour.duration_days))[:3]
-    departures = tour.departures.upcoming()[:6]
     site = SiteSettings.get()
-    return render(
-        request,
-        "tours/tour_detail.html",
+    context = dict(data)
+    context.update(
         {
-            "tour": tour,
             "form": form,
-            "related": related,
-            "departures": departures,
             "wa_text": f"Hello {site.company_name}, I am interested in the {tour.title}. Is it available?",
             "ld_tour": seo.tour(tour, site),
             "ld_crumbs": seo.breadcrumbs(
                 [(tour.category.name, tour.category.get_absolute_url()), (tour.title, tour.get_absolute_url())]
             ),
-        },
+        }
     )
+    return render(request, "tours/tour_detail.html", context)
 
 
 def departures(request):
     site = SiteSettings.get()
     year = site.departures_year
-    qs = GroupDeparture.objects.upcoming().filter(start_date__year=year).select_related("tour", "tour__category")
     kind = request.GET.get("type")
-    if kind in ("kilimanjaro", "safari", "other"):
-        qs = qs.filter(kind=kind)
+    kind = kind if kind in ("kilimanjaro", "safari", "other") else ""
     month = request.GET.get("month")
-    if month and month.isdigit() and 1 <= int(month) <= 12:
-        qs = qs.filter(start_date__month=int(month))
+    month = int(month) if month and month.isdigit() and 1 <= int(month) <= 12 else None
+
+    def load():
+        qs = GroupDeparture.objects.upcoming().filter(start_date__year=year).select_related("tour", "tour__category")
+        if kind:
+            qs = qs.filter(kind=kind)
+        if month:
+            qs = qs.filter(start_date__month=month)
+        all_months = GroupDeparture.objects.upcoming().filter(start_date__year=year).values_list("start_date", flat=True)
+        return {
+            "departures": list(qs),
+            "months": [(m, datetime.date(year, m, 1)) for m in sorted({d.month for d in all_months})],
+            "group_tours": list(Tour.objects.published().filter(style="group").select_related("category")[:6]),
+        }
 
     departure = None
     if request.method == "POST":
@@ -272,25 +320,21 @@ def departures(request):
     if response:
         return response
 
-    all_upcoming = GroupDeparture.objects.upcoming().filter(start_date__year=year)
-    months = sorted({d.month for d in all_upcoming.values_list("start_date", flat=True)})
-    return render(
-        request,
-        "tours/departures.html",
+    data = cached(f"departures:{year}:{kind}:{month}", load)
+    context = dict(data)
+    context.update(
         {
-            "departures": qs,
             "year": year,
-            "kind": kind or "",
-            "month": int(month) if month and month.isdigit() else None,
-            "months": [(m, datetime.date(year, m, 1)) for m in months],
+            "year_str": str(year),
+            "kind": kind,
+            "month": month,
             "form": form,
             "open_departure": departure,
-            "group_tours": Tour.objects.published().filter(style="group").select_related("category")[:6],
-            "year_str": str(year),
             "deposit_percent": 30,
-            "ld_events": seo.departures(list(qs[:30]), site),
-        },
+            "ld_events": seo.departures(data["departures"][:30], site),
+        }
     )
+    return render(request, "tours/departures.html", context)
 
 
 def plan_trip(request):
@@ -322,7 +366,7 @@ def about(request):
         "tours/about.html",
         {
             "testimonials": Testimonial.objects.filter(is_published=True)[:3],
-            "categories": Category.objects.filter(is_active=True),
+            "categories": cached("categories", lambda: list(Category.objects.filter(is_active=True))),
         },
     )
 

@@ -64,7 +64,8 @@ class Command(BaseCommand):
             if not getattr(s, field) or self.update:
                 setattr(s, field, d[field])
                 changed = True
-        for field, key in (("hero_image", "hero_image"), ("about_image", "about_image"), ("cta_image", "cta_image")):
+        for field, key in (("hero_image", "hero_image"), ("hero_image_2", "hero_image_2"), ("hero_image_3", "hero_image_3"),
+                           ("about_image", "about_image"), ("cta_image", "cta_image")):
             if self.images and (not getattr(s, field) or self.update):
                 self.attach(s, field, d[key])
                 changed = True

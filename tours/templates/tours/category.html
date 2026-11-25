@@ -19,6 +19,7 @@
 <section class="section section--flush">
   <div class="container">
     {% include "tours/partials/filters.html" %}
+    <h2 class="sr-only">{{ category.name }} packages</h2>
     <p class="result-count">{{ tours|length }} trip{{ tours|length|pluralize }}</p>
     <div class="grid grid--cards">
       {% for t in tours %}{% include "tours/partials/tour_card.html" %}{% empty %}

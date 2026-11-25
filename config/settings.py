@@ -105,6 +105,16 @@ if DATABASE_URL:
 else:
     DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}}
 
+# Page-data cache shared by all gunicorn workers on the server (see tours/cache.py).
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+        "LOCATION": env("CACHE_DIR", "/tmp/nomad-tours-cache"),
+        "TIMEOUT": 60 * 30,
+        "OPTIONS": {"MAX_ENTRIES": 3000},
+    }
+}
+
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},

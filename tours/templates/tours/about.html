@@ -5,7 +5,7 @@
 {% block description %}{{ site.company_name }} is a locally owned, Maasai-owned tour company in Moshi and Arusha, creating tailor-made safaris and Kilimanjaro climbs since {{ site.founded_year }}.{% endblock %}
 
 {% block content %}
-{% include "tours/partials/page_hero.html" with hero_title="About us" hero_text=site.tagline hero_image=site.about_image %}
+{% include "tours/partials/page_hero.html" with accent_word="us" hero_title="About us" hero_text=site.tagline hero_image=site.about_image %}
 
 <section class="section">
   <div class="container about">
@@ -15,11 +15,11 @@
       {% for p in site.about_paragraphs %}<p>{{ p }}</p>{% endfor %}
     </div>
     <div class="about__media">
-      <img src="{% img site.about_image %}" alt="Our team with one of our safari vehicles" loading="lazy" width="640" height="480">
+      {% picture site.about_image alt="Our team with one of our safari vehicles" sizes="(min-width: 760px) 45vw, 100vw" width=800 height=600 %}
       <ul class="about__stats">
         <li><strong>{{ site.founded_year }}</strong><span>established</span></li>
         <li><strong>{{ site.stat_travellers }}</strong><span>travellers</span></li>
-        <li><strong>{{ site.stat_rating }}★</strong><span>rating</span></li>
+        {% if site.stat_rating %}<li><strong>{{ site.stat_rating }}★</strong><span>rating</span></li>{% else %}<li><strong>100%</strong><span>local team</span></li>{% endif %}
       </ul>
     </div>
   </div>
@@ -78,7 +78,7 @@
     <div class="section__head section__head--center"><h2>What we do</h2></div>
     <div class="cat-grid">
       {% for c in categories %}
-      <a class="cat-tile" href="{{ c.get_absolute_url }}"><img src="{% img c.image %}" alt="{{ c.name }}" loading="lazy" width="600" height="400"><span class="cat-tile__name">{{ c.name }}</span></a>
+      <a class="cat-tile" href="{{ c.get_absolute_url }}">{% picture c.image alt=c.name sizes="(min-width: 760px) 33vw, 50vw" width=600 height=450 %}<span class="cat-tile__name">{{ c.name }}</span></a>
       {% endfor %}
     </div>
   </div>

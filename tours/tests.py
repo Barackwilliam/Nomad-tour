@@ -4,6 +4,7 @@ import shutil
 import tempfile
 
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
@@ -17,7 +18,10 @@ from .models import Category, Enquiry, GroupDeparture, SiteSettings, Tour
 MEDIA = tempfile.mkdtemp()
 
 
-@override_settings(MEDIA_ROOT=MEDIA)
+@override_settings(
+    MEDIA_ROOT=MEDIA,
+    CACHES={"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}},
+)
 class SiteTests(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -32,6 +36,9 @@ class SiteTests(TestCase):
             start_date=datetime.date(settings.departures_year, 6, 5),
             price=1700,
         )
+
+    def setUp(self):
+        cache.clear()
 
     @classmethod
     def tearDownClass(cls):
@@ -175,6 +182,29 @@ class SiteTests(TestCase):
         with Image.open(cat.image.path) as im:
             self.assertEqual(im.format, "WEBP")
             self.assertLessEqual(im.width, 1920)
+        # responsive copies exist and are used in srcset
+        from .images import variant_name
+        from .templatetags.tour_tags import picture
+
+        cat.refresh_from_db()
+        self.assertEqual(cat.image_widths["image"], [480, 800, 1200, 1920])
+        for w in (480, 800, 1200):
+            self.assertTrue(cat.image.storage.exists(variant_name(cat.image.name, w)))
+        html = picture(cat.image, alt="x", sizes="50vw")
+        self.assertIn("-w480.webp 480w", html)
+        self.assertIn("1920w", html)
+
+    def test_dashboard_change_refreshes_cached_pages(self):
+        self.assertContains(self.client.get(self.tour.get_absolute_url()), self.tour.title)
+        self.tour.title = "Brand new title for the climb"
+        self.tour.save()
+        self.assertContains(self.client.get(self.tour.get_absolute_url()), "Brand new title for the climb")
+
+    def test_home_has_seasons_and_slides(self):
+        res = self.client.get("/")
+        self.assertContains(res, "When to go to")
+        self.assertContains(res, "data-seasons")
+        self.assertContains(res, 'type="speculationrules"')
 
     def test_admin_pages(self):
         User = get_user_model()

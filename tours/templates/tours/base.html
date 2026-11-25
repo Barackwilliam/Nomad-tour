@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>{% block title %}{{ site.meta_title|default:site.company_name }}{% endblock %}</title>
   <meta name="description" content="{% block description %}{{ site.meta_description }}{% endblock %}">
   <link rel="canonical" href="{% block canonical %}{{ canonical_url }}{% endblock %}">
   {% if site.google_site_verification %}<meta name="google-site-verification" content="{{ site.google_site_verification }}">{% endif %}
-  <meta name="theme-color" content="#2b2a1f">
+  <meta name="theme-color" content="#15170f">
 
   <meta property="og:type" content="{% block og_type %}website{% endblock %}">
   <meta property="og:site_name" content="{{ site.company_name }}">
@@ -19,10 +19,15 @@
 
   <link rel="icon" href="{% static 'tours/img/favicon.png' %}" type="image/png">
   <link rel="apple-touch-icon" href="{% static 'tours/img/favicon.png' %}">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" href="{% static 'tours/fonts/inter-var.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{% static 'tours/fonts/dm-serif-display.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <style>
+    @font-face{font-family:"Inter";src:url("{% static 'tours/fonts/inter-var.woff2' %}") format("woff2");font-weight:100 900;font-display:swap}
+    @font-face{font-family:"DM Serif Display";src:url("{% static 'tours/fonts/dm-serif-display.woff2' %}") format("woff2");font-weight:400;font-display:swap}
+    @font-face{font-family:"DM Serif Display";src:url("{% static 'tours/fonts/dm-serif-display-italic.woff2' %}") format("woff2");font-weight:400;font-style:italic;font-display:swap}
+  </style>
   <link rel="stylesheet" href="{% static 'tours/css/site.css' %}">
+  <script>document.documentElement.classList.add("js")</script>
   {% block head %}{% endblock %}
 
   {% block jsonld %}{% endblock %}
@@ -31,73 +36,76 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','{{ site.google_analytics_id }}');</script>
   {% endif %}
 </head>
-<body class="{% block body_class %}{% endblock %}">
+<body class="{% block hero_mode %}has-hero{% endblock %} {% block body_class %}{% endblock %}">
 <a class="skip-link" href="#main">Skip to content</a>
 
-<div class="topbar">
-  <div class="container topbar__inner">
-    <div class="topbar__contacts">
-      <a href="mailto:{{ site.email }}"><svg class="i" aria-hidden="true"><use href="#i-mail"/></svg>{{ site.email }}</a>
-      <a href="tel:{{ site.phone_link }}"><svg class="i" aria-hidden="true"><use href="#i-phone"/></svg>{{ site.phone }}</a>
-    </div>
-    <div class="topbar__right">
-      {% if site.tripadvisor %}<a href="{{ site.tripadvisor }}" target="_blank" rel="noopener" class="topbar__ta"><span class="stars" aria-hidden="true">★★★★★</span> Reviews on TripAdvisor</a>{% endif %}
-      <div class="socials socials--small">
-        {% for key, label, url in site.social_links %}{% if key != 'tripadvisor' %}<a href="{{ url }}" target="_blank" rel="noopener" aria-label="{{ label }}"><svg class="i"><use href="#i-{{ key }}"/></svg></a>{% endif %}{% endfor %}
+<div class="masthead" id="masthead">
+  <div class="topbar">
+    <div class="container topbar__inner">
+      <div class="topbar__contacts">
+        <a href="mailto:{{ site.email }}"><svg class="i" aria-hidden="true"><use href="#i-mail"/></svg>{{ site.email }}</a>
+        <a href="tel:{{ site.phone_link }}"><svg class="i" aria-hidden="true"><use href="#i-phone"/></svg>{{ site.phone }}</a>
+      </div>
+      <div class="topbar__right">
+        {% if site.tripadvisor %}<a href="{{ site.tripadvisor }}" target="_blank" rel="noopener" class="topbar__ta"><svg class="i" aria-hidden="true"><use href="#i-tripadvisor"/></svg>Read our TripAdvisor reviews</a>{% endif %}
+        <div class="socials socials--small">
+          {% for key, label, url in site.social_links %}{% if key != 'tripadvisor' %}<a href="{{ url }}" target="_blank" rel="noopener" aria-label="{{ label }}"><svg class="i"><use href="#i-{{ key }}"/></svg></a>{% endif %}{% endfor %}
+        </div>
       </div>
     </div>
   </div>
+
+  <header class="header" id="header">
+    <div class="container header__inner">
+      <a href="{% url 'home' %}" class="logo" aria-label="{{ site.company_name }} home">
+        {% if site.logo %}<img class="logo__color" src="{{ site.logo.url }}" alt="{{ site.company_name }}" width="190" height="48">{% else %}<img class="logo__color" src="{% static 'tours/img/logo.png' %}" alt="{{ site.company_name }}" width="190" height="48">{% endif %}
+        <img class="logo__white" src="{% static 'tours/img/logo-white.png' %}" alt="" width="190" height="48" aria-hidden="true">
+      </a>
+
+      <nav class="nav" id="nav" aria-label="Main menu">
+        <ul class="nav__list">
+          {% for item in menu %}
+          <li class="nav__item has-drop">
+            <a href="{{ item.category.get_absolute_url }}" class="nav__link">{{ item.category.label }}<svg class="i chev" aria-hidden="true"><use href="#i-chevron"/></svg></a>
+            <button class="nav__toggle" type="button" aria-label="Open {{ item.category.label }} menu" aria-expanded="false"><svg class="i"><use href="#i-chevron"/></svg></button>
+            <div class="drop">
+              <a class="drop__head" href="{{ item.category.get_absolute_url }}">All {{ item.category.name }} <span>→</span></a>
+              <ul>
+                {% for t in item.tours %}<li><a href="{% url 'tour' item.category.slug t.slug %}">{{ t.title }}</a></li>{% endfor %}
+              </ul>
+              {% if item.more %}<a class="drop__more" href="{{ item.category.get_absolute_url }}">View all trips →</a>{% endif %}
+              {% for extra in menu_extra %}{% if extra.slug != item.category.slug and forloop.parentloop.counter <= 2 %}<a class="drop__more" href="{{ extra.get_absolute_url }}">{{ extra.name }} →</a>{% endif %}{% endfor %}
+            </div>
+          </li>
+          {% endfor %}
+          <li class="nav__item"><a href="{% url 'departures' %}" class="nav__link">Group Departures</a></li>
+          <li class="nav__item has-drop">
+            <a href="{% url 'about' %}" class="nav__link">About<svg class="i chev" aria-hidden="true"><use href="#i-chevron"/></svg></a>
+            <button class="nav__toggle" type="button" aria-label="Open About menu" aria-expanded="false"><svg class="i"><use href="#i-chevron"/></svg></button>
+            <div class="drop drop--small">
+              <ul>
+                <li><a href="{% url 'about' %}">About Us</a></li>
+                {% for p in footer_pages %}{% if p.kind == 'page' %}<li><a href="{{ p.get_absolute_url }}">{{ p.title }}</a></li>{% endif %}{% endfor %}
+                <li><a href="{% url 'faq' %}">Travel FAQ</a></li>
+                <li><a href="{% url 'guides' %}">Travel Guides</a></li>
+                <li><a href="{% url 'contact' %}">Contact</a></li>
+              </ul>
+            </div>
+          </li>
+        </ul>
+        <div class="nav__mobile-cta">
+          <a href="{% url 'plan_trip' %}" class="btn btn--accent btn--block">Plan My Trip</a>
+          <a href="{{ site.whatsapp_url }}" class="btn btn--wa btn--block" target="_blank" rel="noopener"><svg class="i"><use href="#i-whatsapp"/></svg>WhatsApp us</a>
+        </div>
+      </nav>
+
+      <div class="header__actions">
+        <a href="{% url 'plan_trip' %}" class="btn btn--accent header__cta">Plan My Trip</a>
+        <button class="burger" id="burger" type="button" aria-label="Open menu" aria-controls="nav" aria-expanded="false"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </header>
 </div>
-
-<header class="header" id="header">
-  <div class="container header__inner">
-    <a href="{% url 'home' %}" class="logo" aria-label="{{ site.company_name }} home">
-      {% if site.logo %}<img src="{{ site.logo.url }}" alt="{{ site.company_name }}" width="190" height="48">{% else %}<img src="{% static 'tours/img/logo.png' %}" alt="{{ site.company_name }}" width="190" height="48">{% endif %}
-    </a>
-
-    <nav class="nav" id="nav" aria-label="Main menu">
-      <ul class="nav__list">
-        {% for item in menu %}
-        <li class="nav__item has-drop">
-          <a href="{{ item.category.get_absolute_url }}" class="nav__link">{{ item.category.label }}<svg class="i chev" aria-hidden="true"><use href="#i-chevron"/></svg></a>
-          <button class="nav__toggle" type="button" aria-label="Open {{ item.category.label }} menu" aria-expanded="false"><svg class="i"><use href="#i-chevron"/></svg></button>
-          <div class="drop">
-            <a class="drop__head" href="{{ item.category.get_absolute_url }}">All {{ item.category.name }} <span>→</span></a>
-            <ul>
-              {% for t in item.tours %}<li><a href="{% url 'tour' item.category.slug t.slug %}">{{ t.title }}</a></li>{% endfor %}
-            </ul>
-            {% if item.more %}<a class="drop__more" href="{{ item.category.get_absolute_url }}">View all trips →</a>{% endif %}
-            {% for extra in menu_extra %}{% if extra.slug != item.category.slug and forloop.parentloop.counter <= 2 %}<a class="drop__more" href="{{ extra.get_absolute_url }}">{{ extra.name }} →</a>{% endif %}{% endfor %}
-          </div>
-        </li>
-        {% endfor %}
-        <li class="nav__item"><a href="{% url 'departures' %}" class="nav__link">Group Departures</a></li>
-        <li class="nav__item has-drop">
-          <a href="{% url 'about' %}" class="nav__link">About<svg class="i chev" aria-hidden="true"><use href="#i-chevron"/></svg></a>
-          <button class="nav__toggle" type="button" aria-label="Open About menu" aria-expanded="false"><svg class="i"><use href="#i-chevron"/></svg></button>
-          <div class="drop drop--small">
-            <ul>
-              <li><a href="{% url 'about' %}">About Us</a></li>
-              {% for p in footer_pages %}{% if p.kind == 'page' %}<li><a href="{{ p.get_absolute_url }}">{{ p.title }}</a></li>{% endif %}{% endfor %}
-              <li><a href="{% url 'faq' %}">Travel FAQ</a></li>
-              <li><a href="{% url 'guides' %}">Travel Guides</a></li>
-              <li><a href="{% url 'contact' %}">Contact</a></li>
-            </ul>
-          </div>
-        </li>
-      </ul>
-      <div class="nav__mobile-cta">
-        <a href="{% url 'plan_trip' %}" class="btn btn--accent btn--block">Plan My Trip</a>
-        <a href="{{ site.whatsapp_url }}" class="btn btn--wa btn--block" target="_blank" rel="noopener"><svg class="i"><use href="#i-whatsapp"/></svg>WhatsApp us</a>
-      </div>
-    </nav>
-
-    <div class="header__actions">
-      <a href="{% url 'plan_trip' %}" class="btn btn--accent header__cta">Plan My Trip</a>
-      <button class="burger" id="burger" type="button" aria-label="Open menu" aria-controls="nav" aria-expanded="false"><span></span><span></span><span></span></button>
-    </div>
-  </div>
-</header>
 
 {% if messages %}
 <div class="container messages">{% for m in messages %}<p class="msg msg--{{ m.tags }}">{{ m }}</p>{% endfor %}</div>
@@ -109,16 +117,18 @@
 
 {% block footer_cta %}
 <section class="footer-cta">
-  <div class="container footer-cta__inner">
-    <img class="footer-cta__img" src="{% img site.cta_image 'tours/img/hero.webp' %}" alt="Safari vehicle in the Ngorongoro Crater" loading="lazy" width="560" height="380">
-    <div class="footer-cta__text">
-      <p class="eyebrow">Karibu Tanzania</p>
-      <h2>Ready to plan your next adventure?</h2>
-      <p>Tell us your ideas and we'll put together a free, personalised itinerary for your climb, safari or beach holiday. No commitment.</p>
-      <div class="btn-row">
-        <a href="{{ site.whatsapp_url }}" class="btn btn--wa" target="_blank" rel="noopener"><svg class="i"><use href="#i-whatsapp"/></svg>Chat on WhatsApp</a>
-        <a href="{% url 'plan_trip' %}" class="btn btn--accent">Enquire now</a>
-        <a href="tel:{{ site.phone_link }}" class="btn btn--ghost-light"><svg class="i"><use href="#i-phone"/></svg>Call us</a>
+  <div class="container">
+    <div class="footer-cta__inner" data-reveal>
+      {% picture site.cta_image alt="Safari vehicle in the Ngorongoro Crater" sizes="(min-width: 760px) 45vw, 100vw" cls="footer-cta__img" fallback="tours/img/hero.webp" width=900 height=600 %}
+      <div class="footer-cta__text">
+        <p class="eyebrow eyebrow--light">Karibu Tanzania</p>
+        <h2>Ready to plan your <em>next adventure?</em></h2>
+        <p>Tell us your ideas and we'll put together a free, personalised itinerary for your climb, safari or beach holiday. No commitment.</p>
+        <div class="btn-row">
+          <a href="{{ site.whatsapp_url }}" class="btn btn--wa" target="_blank" rel="noopener"><svg class="i"><use href="#i-whatsapp"/></svg>Chat on WhatsApp</a>
+          <a href="{% url 'plan_trip' %}" class="btn btn--accent">Enquire now</a>
+          <a href="tel:{{ site.phone_link }}" class="btn btn--ghost-light"><svg class="i"><use href="#i-phone"/></svg>Call us</a>
+        </div>
       </div>
     </div>
   </div>
@@ -128,8 +138,8 @@
 <footer class="footer">
   <div class="container footer__grid">
     <div class="footer__brand">
-      <p class="footer__logo">{{ site.company_name }}</p>
-      <p>{{ site.intro_text|default:site.tagline|truncatewords:45 }}</p>
+      <img class="footer__logo" src="{% static 'tours/img/logo-white.png' %}" alt="{{ site.company_name }}" width="190" height="48" loading="lazy">
+      <p>{{ site.intro_text|default:site.tagline|truncatewords:40 }}</p>
       <div class="socials">
         {% for key, label, url in site.social_links %}<a href="{{ url }}" target="_blank" rel="noopener" aria-label="{{ label }}"><svg class="i"><use href="#i-{{ key }}"/></svg></a>{% endfor %}
       </div>
@@ -138,6 +148,7 @@
       <h3>Our trips</h3>
       <ul>
         {% for item in menu %}<li><a href="{{ item.category.get_absolute_url }}">{{ item.category.name }}</a></li>{% endfor %}
+        {% for extra in menu_extra %}<li><a href="{{ extra.get_absolute_url }}">{{ extra.name }}</a></li>{% endfor %}
         <li><a href="{% url 'departures' %}">Group departures {{ site.departures_year }}</a></li>
         <li><a href="{% url 'tour_list' %}">All tours</a></li>
       </ul>
@@ -162,6 +173,7 @@
       {% if site.payment_link %}<a class="btn btn--ghost-light btn--sm" href="{{ site.payment_link }}" target="_blank" rel="noopener"><svg class="i"><use href="#i-card"/></svg>Pay securely online</a>{% endif %}
     </div>
   </div>
+  {% if site.slogan %}<div class="footer__slogan container" data-text="{{ site.slogan }}" aria-hidden="true"></div>{% endif %}
   <div class="container footer__bottom">
     <p>© {{ current_year }} {{ site.company_name }}. All rights reserved.</p>
     <p><a href="{% url 'contact' %}">Contact</a> · <a href="/sitemap.xml">Sitemap</a></p>
@@ -174,6 +186,9 @@
 
 {% include "tours/partials/icons.html" %}
 <script src="{% static 'tours/js/site.js' %}" defer></script>
+<script type="speculationrules">
+{"prerender":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/admin/*"}},{"not":{"href_matches":"/thank-you/*"}},{"not":{"selector_matches":"[target=_blank]"}}]},"eagerness":"moderate"}]}
+</script>
 {% block scripts %}{% endblock %}
 </body>
 </html>

@@ -33,8 +33,9 @@ class SEOFields(models.Model):
 # Site-wide settings (one row only)
 # ---------------------------------------------------------------------------
 class SiteSettings(OptimisedImagesMixin, models.Model):
-    IMAGE_FIELDS = ("logo", "hero_image", "about_image", "cta_image")
+    IMAGE_FIELDS = ("logo", "hero_image", "hero_image_2", "hero_image_3", "about_image", "cta_image")
     CACHE_KEY = "site-settings"
+    image_widths = models.JSONField(default=dict, blank=True, editable=False)
 
     company_name = models.CharField(max_length=120, default="Nomad Explorer Tours")
     tagline = models.CharField(max_length=200, default="Authentic African Safaris. Unforgettable Kilimanjaro Adventures.")
@@ -77,6 +78,8 @@ class SiteSettings(OptimisedImagesMixin, models.Model):
         "Private, tailor-made trips with local guides.",
     )
     hero_image = models.ImageField(upload_to=upload_to("brand"), blank=True)
+    hero_image_2 = models.ImageField("Hero slideshow photo 2", upload_to=upload_to("brand"), blank=True)
+    hero_image_3 = models.ImageField("Hero slideshow photo 3", upload_to=upload_to("brand"), blank=True)
     intro_title = models.CharField(max_length=150, default="Let us be your guide to Kilimanjaro and Tanzania")
     intro_text = models.TextField(blank=True)
     about_title = models.CharField(max_length=150, default="Discover Tanzania with Nomad Explorer Tours")
@@ -97,7 +100,10 @@ class SiteSettings(OptimisedImagesMixin, models.Model):
     founded_year = models.PositiveIntegerField(default=2019)
     stat_travellers = models.CharField("Happy travellers", max_length=20, default="5,000+")
     stat_summits = models.CharField("Successful summits", max_length=20, default="1,200+")
-    stat_rating = models.CharField("Review rating", max_length=20, default="5.0")
+    stat_rating = models.CharField(
+        "Review rating", max_length=20, blank=True, default="",
+        help_text="Your TripAdvisor rating, e.g. 5.0. Leave empty to hide it.",
+    )
 
     departures_year = models.PositiveIntegerField(
         "Group departures year",
@@ -136,10 +142,13 @@ class SiteSettings(OptimisedImagesMixin, models.Model):
 
     @classmethod
     def get(cls):
-        obj = cache.get(cls.CACHE_KEY)
+        from .cache import version  # the key changes whenever any content is saved
+
+        key = f"{cls.CACHE_KEY}:v{version()}"
+        obj = cache.get(key)
         if obj is None:
             obj, _ = cls.objects.get_or_create(pk=1)
-            cache.set(cls.CACHE_KEY, obj, 300)
+            cache.set(key, obj, 600)
         return obj
 
     @property
@@ -165,6 +174,10 @@ class SiteSettings(OptimisedImagesMixin, models.Model):
     @property
     def intro_paragraphs(self):
         return paragraphs(self.intro_text)
+
+    @property
+    def hero_slides(self):
+        return [im for im in (self.hero_image, self.hero_image_2, self.hero_image_3) if im]
 
     @property
     def who_we_are_paragraphs(self):
@@ -201,6 +214,7 @@ class SiteSettings(OptimisedImagesMixin, models.Model):
 # ---------------------------------------------------------------------------
 class Category(OptimisedImagesMixin, SEOFields):
     IMAGE_FIELDS = ("image",)
+    image_widths = models.JSONField(default=dict, blank=True, editable=False)
 
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True, help_text="Part of the web address, e.g. kilimanjaro-climbing")
@@ -238,6 +252,7 @@ class TourQuerySet(models.QuerySet):
 
 class Tour(OptimisedImagesMixin, SEOFields):
     IMAGE_FIELDS = ("image",)
+    image_widths = models.JSONField(default=dict, blank=True, editable=False)
 
     STYLE_PRIVATE = "private"
     STYLE_GROUP = "group"
@@ -361,6 +376,7 @@ class Tour(OptimisedImagesMixin, SEOFields):
 
 class TourDay(OptimisedImagesMixin, models.Model):
     IMAGE_FIELDS = ("image",)
+    image_widths = models.JSONField(default=dict, blank=True, editable=False)
     IMAGE_MAX_WIDTH = 1200
 
     tour = models.ForeignKey(Tour, on_delete=models.CASCADE, related_name="days")
@@ -417,6 +433,7 @@ class TourPrice(models.Model):
 
 class TourImage(OptimisedImagesMixin, models.Model):
     IMAGE_FIELDS = ("image",)
+    image_widths = models.JSONField(default=dict, blank=True, editable=False)
 
     tour = models.ForeignKey(Tour, on_delete=models.CASCADE, related_name="gallery")
     image = models.ImageField(upload_to=upload_to("gallery"))
@@ -629,6 +646,7 @@ class Page(OptimisedImagesMixin, SEOFields):
 
     IMAGE_FIELDS = ("image",)
     KIND_CHOICES = [("page", "Information page"), ("guide", "Travel guide / blog article")]
+    image_widths = models.JSONField(default=dict, blank=True, editable=False)
 
     kind = models.CharField(max_length=10, choices=KIND_CHOICES, default="page")
     title = models.CharField(max_length=150)

@@ -74,6 +74,17 @@ Render → Settings → Custom domains → ongeza domain ya mteja, kisha weka DN
 - **Site settings** — logo, simu, WhatsApp, email, anwani, social media, picha za home page, maandishi ya About, Google Analytics.
 - **Categories, Pages & guides, FAQs, Reviews.**
 
+## Kasi (speed)
+
+Lighthouse (simu, production mode): **98–100** kwenye Performance, Accessibility, Best practices na SEO kwa kurasa zote kuu. Home page LCP ≈ 0.9s.
+
+Kinachoifanya iwe fast:
+- Kila picha inayopakiwa inabadilishwa kuwa WebP na nakala ndogo (480/800/1200px) zinatengenezwa; simu inapakua picha ndogo tu (`srcset`). Kwa picha zilizopo tayari: `python manage.py make_image_variants`.
+- Fonts ziko kwenye site yenyewe (hakuna Google Fonts), zina `preload`.
+- Data ya kurasa inakaa kwenye cache; ukibadilisha chochote kwenye dashboard cache inajisafisha papo hapo.
+- Kurasa zinapakiwa kabla mtu hajabonyeza link (Speculation Rules: prerender ukipeleka mouse), na kuna mpito laini kati ya kurasa (View Transitions).
+- Static files zinabanwa (Brotli/gzip) na kukaa kwenye cache ya browser kwa mwaka mmoja.
+
 ## Muundo wa code
 
 ```
@@ -82,7 +93,9 @@ tours/models.py    Tour, TourDay, TourPrice, GroupDeparture, Enquiry, Category, 
 tours/admin.py     dashboard (Unfold)
 tours/views.py     kurasa zote + forms
 tours/seo.py       JSON-LD (structured data)
-tours/images.py    kupunguza picha na kuzibadilisha kuwa WebP
+tours/images.py    kupunguza picha, WebP na nakala ndogo za simu
+tours/cache.py     cache ya data ya kurasa
+tours/seasons.py   'When to go' (mwezi kwa mwezi)
 tours/seed/        data.json + picha za mwanzo
 tours/templates/   HTML
 tours/static/      CSS, JS, logo

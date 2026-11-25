@@ -9,10 +9,11 @@
 {% block jsonld %}{{ ld_tour|json_ld }}{{ ld_crumbs|json_ld }}{% endblock %}
 {% block wa_link %}{% wa wa_text %}{% endblock %}
 {% block body_class %}has-bookbar{% endblock %}
+{% block head %}{% with h=tour.image %}{% if h %}<link rel="preload" as="image" href="{{ h.url }}" imagesrcset="{% srcset h %}" imagesizes="100vw" fetchpriority="high">{% endif %}{% endwith %}{% endblock %}
 
 {% block content %}
 <section class="tour-hero">
-  <img class="tour-hero__bg" src="{% img tour.image %}" alt="{{ tour.title }}" fetchpriority="high" width="1600" height="750">
+  {% picture tour.image alt=tour.title sizes="100vw" cls="tour-hero__bg" priority=True width=1600 height=750 %}
   <div class="container tour-hero__inner">
     <nav class="crumbs" aria-label="Breadcrumb">
       <a href="{% url 'home' %}">Home</a><span>/</span><a href="{{ tour.category.get_absolute_url }}">{{ tour.category.name }}</a><span>/</span><span aria-current="page">{{ tour.title }}</span>
@@ -68,7 +69,7 @@
 
       {% with gallery=tour.gallery.all %}{% if gallery %}
       <div class="gallery" data-gallery>
-        {% for g in gallery %}<a href="{{ g.image.url }}" class="gallery__item"><img src="{{ g.image.url }}" alt="{{ g.caption|default:tour.title }}" loading="lazy" width="400" height="280"></a>{% endfor %}
+        {% for g in gallery %}<a href="{{ g.image.url }}" class="gallery__item">{% picture g.image alt=g.caption|default:tour.title sizes="(min-width: 1000px) 200px, 33vw" width=400 height=300 %}</a>{% endfor %}
       </div>
       {% endif %}{% endwith %}
 

@@ -1,8 +1,8 @@
-{% load tour_tags %}<article class="card" data-cat="{{ t.category.slug }}">
+{% load tour_tags %}<article class="card" data-cat="{{ t.category.slug }}" data-reveal>
   <a class="card__media" href="{{ t.get_absolute_url }}" tabindex="-1" aria-hidden="true">
-    <img src="{% img t.image %}" alt="{{ t.title }}" loading="lazy" width="600" height="420">
-    <span class="card__badge">{{ t.short_duration }}</span>
-    {% if t.is_group %}<span class="card__tag card__tag--group">Group joining</span>{% elif t.level == 'luxury' %}<span class="card__tag">Luxury</span>{% elif t.level == 'camping' %}<span class="card__tag card__tag--camp">Camping</span>{% endif %}
+    {% picture t.image alt=t.title sizes="(min-width: 1140px) 380px, (min-width: 560px) 48vw, 92vw" width=600 height=420 %}
+    <span class="card__badge"><svg class="i"><use href="#i-clock"/></svg>{{ t.short_duration }}</span>
+    {% if t.is_group %}<span class="card__tag card__tag--group">Group joining</span>{% elif t.level == 'luxury' %}<span class="card__tag card__tag--lux">Luxury</span>{% elif t.level == 'camping' %}<span class="card__tag card__tag--camp">Camping</span>{% endif %}
   </a>
   <div class="card__body">
     <p class="card__cat">{{ t.category.name }}</p>
@@ -10,7 +10,7 @@
     {% if t.summary %}<p class="card__summary">{{ t.summary }}</p>{% endif %}
     <div class="card__foot">
       <p class="card__price">{% if t.price_from %}<small>From</small> <strong>{{ t.price_from|money }}</strong> <small>{{ t.price_note }}</small>{% else %}<strong class="card__onreq">Price on request</strong>{% endif %}</p>
-      <a class="card__link" href="{{ t.get_absolute_url }}" aria-label="View {{ t.title }}">View trip <svg class="i"><use href="#i-arrow"/></svg></a>
+      <a class="card__link" href="{{ t.get_absolute_url }}" aria-label="View {{ t.title }}"><svg class="i"><use href="#i-arrow"/></svg></a>
     </div>
   </div>
 </article>

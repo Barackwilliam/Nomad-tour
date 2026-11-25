@@ -6,10 +6,11 @@
 {% block jsonld %}{{ ld_events|json_ld }}{% endblock %}
 
 {% block content %}
-{% include "tours/partials/page_hero.html" with hero_title="Group Joining Safaris & Kilimanjaro Climbs" hero_text="Scheduled departures for "|add:year_str|add:". Travel with others, pay less, keep private-tour quality." c2="Group departures" %}
+{% include "tours/partials/page_hero.html" with accent_word="Kilimanjaro Climbs" hero_title="Group Joining Safaris & Kilimanjaro Climbs" hero_text="Scheduled departures for "|add:year_str|add:". Travel with others, pay less, keep private-tour quality." c2="Group departures" %}
 
 <section class="section section--tight">
   <div class="container">
+    <h2 class="sr-only">How group joining works</h2>
     <div class="steps">
       <div class="step"><span>1</span><h3>Choose a date</h3><p>Pick a Kilimanjaro climb or safari departure in {{ year }} that fits your plans.</p></div>
       <div class="step"><span>2</span><h3>Reserve your place</h3><p>Send the form or WhatsApp us. A {{ deposit_percent }}% deposit secures your seat.</p></div>

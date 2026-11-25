@@ -1,29 +1,38 @@
 {% extends "tours/base.html" %}
 {% load static tour_tags %}
 
-{% block head %}<link rel="preload" as="image" href="{% img site.hero_image 'tours/img/hero.webp' %}" fetchpriority="high">{% endblock %}
+{% block head %}{% with h=site.hero_image %}{% if h %}<link rel="preload" as="image" href="{{ h.url }}" imagesrcset="{% srcset h %}" imagesizes="100vw" fetchpriority="high">{% endif %}{% endwith %}{% endblock %}
 
-{% block jsonld %}
-{{ ld_org|json_ld }}
-{% endblock %}
+{% block jsonld %}{{ ld_org|json_ld }}{% if faqs %}{{ ld_faq|json_ld }}{% endif %}{% endblock %}
 
 {% block content %}
-<section class="hero">
-  <img class="hero__bg" src="{% img site.hero_image 'tours/img/hero.webp' %}" alt="Wildebeest herds and a safari vehicle in the Serengeti" fetchpriority="high" width="1920" height="1080">
+{# ------------------------------------------------------------------ HERO #}
+<section class="hero" data-hero>
+  <div class="hero__slides">
+    {% for im in site.hero_slides %}
+      {% if forloop.first %}
+        <div class="hero__slide is-active">{% picture im alt="" sizes="100vw" priority=True width=1920 height=1080 %}</div>
+      {% else %}
+        <div class="hero__slide"><img data-src="{{ im.url }}" data-srcset="{% srcset im %}" sizes="100vw" alt="" width="1920" height="1080" decoding="async"></div>
+      {% endif %}
+    {% empty %}
+      <div class="hero__slide is-active"><img src="{% static 'tours/img/hero.webp' %}" alt="" width="1600" height="900" fetchpriority="high"></div>
+    {% endfor %}
+  </div>
+
   <div class="container hero__inner">
     <div class="hero__copy">
-      <p class="eyebrow eyebrow--light">Maasai-owned · Moshi &amp; Arusha, Tanzania</p>
-      <h1>{{ site.hero_title }}</h1>
+      <p class="eyebrow eyebrow--light">Maasai-owned · Moshi &amp; Arusha · Since {{ site.founded_year }}</p>
+      <h1 class="hero__title">{{ site.hero_title|accent:"Tanzania" }}</h1>
       <p class="hero__lead">{{ site.hero_subtitle }}</p>
-      <ul class="hero__stats">
-        <li><strong>{{ site.years_experience }}+</strong><span>years guiding in Tanzania</span></li>
-        <li><strong>{{ site.stat_travellers }}</strong><span>happy travellers</span></li>
-        <li><strong>{{ site.stat_rating }}<svg class="i"><use href="#i-star"/></svg></strong><span>TripAdvisor rating</span></li>
-      </ul>
+      <div class="btn-row">
+        <a href="#adventures" class="btn btn--accent btn--lg">Explore our trips</a>
+        <a href="{{ site.whatsapp_url }}" class="btn btn--glass btn--lg" target="_blank" rel="noopener"><svg class="i"><use href="#i-whatsapp"/></svg>Talk to a local expert</a>
+      </div>
     </div>
 
     <form class="planner" action="{% url 'plan_trip' %}" method="get">
-      <h2 class="planner__title">Where do we start?</h2>
+      <p class="planner__title">Where do we start?</p>
       <div class="planner__tabs" role="radiogroup" aria-label="Type of trip">
         <label><input type="radio" name="trip" value="Wildlife safari" checked><span>Safari</span></label>
         <label><input type="radio" name="trip" value="Kilimanjaro climb"><span>Kilimanjaro</span></label>
@@ -31,91 +40,186 @@
       </div>
       <label class="planner__label" for="planner-month">When would you like to travel?</label>
       <select id="planner-month" name="month">
-        {% for m in months %}<option value="{{ m|date:'F Y' }}">{{ m|date:"F, Y" }}</option>{% endfor %}
+        {% for m in months %}<option value="{{ m|date:'F Y' }}">{{ m|date:"F Y" }}</option>{% endfor %}
       </select>
-      <button type="submit" class="btn btn--accent btn--block btn--lg">Design my trip</button>
-      <p class="planner__note">Free itinerary and quote. No commitment.</p>
+      <button type="submit" class="btn btn--accent btn--block btn--lg">Design my trip <svg class="i"><use href="#i-arrow"/></svg></button>
+      <p class="planner__note"><svg class="i"><use href="#i-check"/></svg>Free itinerary &amp; quote within 24h</p>
     </form>
+  </div>
+
+  <div class="hero__bar">
+    <div class="container hero__bar-inner">
+      <ul class="hero__stats">
+        <li><strong>{{ site.years_experience }}+</strong><span>years guiding</span></li>
+        <li><strong>{{ site.stat_travellers }}</strong><span>happy travellers</span></li>
+        {% if site.stat_rating %}<li><strong>{{ site.stat_rating }}<svg class="i"><use href="#i-star"/></svg></strong><span>TripAdvisor rating</span></li>{% else %}<li><strong>100%</strong><span>local team</span></li>{% endif %}
+      </ul>
+      {% if site.hero_slides|length > 1 %}
+      <div class="hero__dots" role="group" aria-label="Hero photos">
+        {% for im in site.hero_slides %}<button type="button" class="hero__dot{% if forloop.first %} is-active{% endif %}" aria-label="Photo {{ forloop.counter }}" data-slide="{{ forloop.counter0 }}"></button>{% endfor %}
+      </div>
+      {% endif %}
+    </div>
   </div>
 </section>
 
+{# ------------------------------------------------------------------ MARQUEE #}
+<div class="marquee" aria-hidden="true">
+  <div class="marquee__track">
+    {% for _ in "12" %}<span>Serengeti</span><span>Ngorongoro Crater</span><span>Kilimanjaro</span><span>Tarangire</span><span>Zanzibar</span><span>Lake Manyara</span><span>Mount Meru</span><span>Maasai Culture</span>{% endfor %}
+  </div>
+</div>
+
+{# ------------------------------------------------------------------ INTRO #}
 <section class="section intro">
-  <div class="container">
-    <div class="section__head section__head--center">
+  <div class="container intro__grid">
+    <div class="intro__text" data-reveal>
       <p class="eyebrow">Welcome to {{ site.company_name }}</p>
-      <h2>{{ site.intro_title }}</h2>
+      <h2>{{ site.intro_title|accent:"Kilimanjaro" }}</h2>
       {% for p in site.intro_paragraphs %}<p class="lead">{{ p }}</p>{% endfor %}
+      <ul class="intro__points">
+        <li><svg class="i"><use href="#i-check"/></svg>Private, tailor-made trips on any date</li>
+        <li><svg class="i"><use href="#i-check"/></svg>Our own guides, crew and 4x4 Land Cruisers</li>
+        <li><svg class="i"><use href="#i-check"/></svg>Fair, transparent local prices</li>
+      </ul>
+      <a href="{% url 'about' %}" class="link-arrow">Our story <svg class="i"><use href="#i-arrow"/></svg></a>
     </div>
-    <div class="big-cards">
-      {% for c in categories|slice:":3" %}
-      <a class="big-card" href="{{ c.get_absolute_url }}">
-        <img src="{% img c.image %}" alt="{{ c.name }}" loading="lazy" width="800" height="600">
-        <div class="big-card__text">
-          <h3>{{ c.name }}</h3>
-          <p>{{ c.tagline }}</p>
-          <span class="big-card__cta">{% if c.min_price %}From {{ c.min_price|money }} · {% endif %}View trips <svg class="i"><use href="#i-arrow"/></svg></span>
-        </div>
+    <div class="intro__collage" data-reveal>
+      <div class="intro__img intro__img--a">{% picture site.about_image alt="Our team with one of our safari vehicles" sizes="(min-width: 1000px) 420px, 70vw" width=640 height=800 %}</div>
+      {% with c=categories.0 %}{% if c %}<div class="intro__img intro__img--b">{% picture c.image alt=c.name sizes="(min-width: 1000px) 320px, 50vw" width=600 height=600 %}</div>{% endif %}{% endwith %}
+      <div class="intro__badge"><strong>{{ site.founded_year }}</strong><span>Maasai-owned<br>since</span></div>
+    </div>
+  </div>
+</section>
+
+{# ------------------------------------------------------------------ EXPERIENCES (bento) #}
+<section class="section section--ivory">
+  <div class="container">
+    <div class="section__head section__head--split" data-reveal>
+      <div>
+        <p class="eyebrow">Experiences</p>
+        <h2>Find your kind of <em>adventure</em></h2>
+      </div>
+      <a href="{% url 'tour_list' %}" class="link-arrow">View all trips <svg class="i"><use href="#i-arrow"/></svg></a>
+    </div>
+    <div class="bento">
+      {% for c in categories %}
+      <a class="bento__item bento__item--{{ forloop.counter }}" href="{{ c.get_absolute_url }}" data-reveal>
+        {% picture c.image alt=c.name sizes="(min-width: 1000px) 50vw, 100vw" width=900 height=700 %}
+        <span class="bento__text">
+          <span class="bento__name">{{ c.name }}</span>
+          <span class="bento__tag">{{ c.tagline }}</span>
+          <span class="bento__cta">{% if c.min_price %}From {{ c.min_price|money }}{% else %}Explore{% endif %} <svg class="i"><use href="#i-arrow"/></svg></span>
+        </span>
       </a>
       {% endfor %}
     </div>
   </div>
 </section>
 
-<section class="section section--sand why">
-  <div class="container why__grid">
-    <div class="why__intro">
-      <p class="eyebrow">Why travel with us</p>
-      <h2>Local experts who run every trip themselves</h2>
-      <p>We are not a booking agent. Our own guides, cooks, porters and vehicles look after you from the moment you land until we wave you goodbye.</p>
-      <div class="btn-row">
-        <a href="{{ site.whatsapp_url }}" class="btn btn--wa" target="_blank" rel="noopener"><svg class="i"><use href="#i-whatsapp"/></svg>Chat online</a>
-        <a href="{% url 'plan_trip' %}" class="btn btn--outline">Send an enquiry</a>
+{# ------------------------------------------------------------------ WHY US #}
+<section class="section section--night why">
+  <div class="container">
+    <div class="why__head" data-reveal>
+      <div>
+        <p class="eyebrow eyebrow--light">Why travel with us</p>
+        <h2>Local experts who run <em>every trip</em> themselves</h2>
       </div>
+      <p>We are not a booking agent. Our own guides, cooks, porters and vehicles look after you from the moment you land until we wave you goodbye.</p>
     </div>
-    <ul class="features">
-      <li><svg class="i"><use href="#i-compass"/></svg><h3>Maasai-owned &amp; local</h3><p>Based in Moshi and Arusha, at the foot of Kilimanjaro.</p></li>
-      <li><svg class="i"><use href="#i-flag"/></svg><h3>{{ site.years_experience }}+ years of experience</h3><p>Guiding safaris and climbs since {{ site.founded_year }}.</p></li>
-      <li><svg class="i"><use href="#i-shield"/></svg><h3>Our own operations</h3><p>We never outsource your trip. One team, start to finish.</p></li>
-      <li><svg class="i"><use href="#i-heart"/></svg><h3>Tailor-made &amp; private</h3><p>Every itinerary adjusted to your dates, pace and budget.</p></li>
-      <li><svg class="i"><use href="#i-leaf"/></svg><h3>Responsible tourism</h3><p>Fair pay for porters and support for local communities.</p></li>
-      <li><svg class="i"><use href="#i-card"/></svg><h3>Fair, clear prices</h3><p>Transparent quotes with no hidden costs. Pay safely online.</p></li>
-    </ul>
+    <ol class="why__list">
+      <li data-reveal><span class="why__num">01</span><h3>Maasai-owned &amp; local</h3><p>Based in Moshi and Arusha, at the foot of Kilimanjaro. Real local knowledge on every trip.</p></li>
+      <li data-reveal><span class="why__num">02</span><h3>{{ site.years_experience }}+ years of experience</h3><p>Guiding safaris, climbs and cultural tours since {{ site.founded_year }}.</p></li>
+      <li data-reveal><span class="why__num">03</span><h3>Our own operations</h3><p>We never outsource your trip. One team takes care of you from start to finish.</p></li>
+      <li data-reveal><span class="why__num">04</span><h3>Tailor-made &amp; private</h3><p>Every itinerary adjusted to your dates, pace, interests and budget.</p></li>
+      <li data-reveal><span class="why__num">05</span><h3>Responsible tourism</h3><p>Fair pay for porters and crew, and real support for local communities.</p></li>
+      <li data-reveal><span class="why__num">06</span><h3>Fair, clear prices</h3><p>Transparent quotes with no hidden costs, and safe online payment.</p></li>
+    </ol>
   </div>
 </section>
 
-<section class="section popular">
+{# ------------------------------------------------------------------ POPULAR #}
+<section class="section section--ivory" id="adventures">
   <div class="container">
-    <div class="section__head section__head--split">
+    <div class="section__head section__head--split" data-reveal>
       <div>
         <p class="eyebrow">Hand-picked trips</p>
-        <h2>Our popular adventures</h2>
+        <h2>Our popular <em>adventures</em></h2>
       </div>
       <div class="tabs" role="tablist" aria-label="Filter trips">
         <button type="button" class="tab is-active" data-filter="all" role="tab" aria-selected="true">All</button>
         {% for c in featured_categories %}<button type="button" class="tab" data-filter="{{ c.slug }}" role="tab" aria-selected="false">{{ c.label }}</button>{% endfor %}
       </div>
     </div>
-    <div class="grid grid--cards" data-filter-grid>
-      {% for t in featured %}{% include "tours/partials/tour_card.html" %}{% endfor %}
+  </div>
+  <div class="rail" data-filter-grid>
+    <div class="rail__track">
+      {% for t in featured %}{% include "tours/partials/poster_card.html" %}{% endfor %}
     </div>
-    <div class="center"><a href="{% url 'tour_list' %}" class="btn btn--outline">View all tours</a></div>
+  </div>
+  <div class="container rail__controls">
+    <div class="rail__arrows">
+      <button type="button" class="rail__btn" data-rail="-1" aria-label="Previous trips"><svg class="i" style="transform:rotate(180deg)"><use href="#i-arrow"/></svg></button>
+      <button type="button" class="rail__btn" data-rail="1" aria-label="Next trips"><svg class="i"><use href="#i-arrow"/></svg></button>
+    </div>
+    <a href="{% url 'tour_list' %}" class="btn btn--outline">View all tours</a>
   </div>
 </section>
 
-{% if departures %}
-<section class="section section--dark departures-teaser">
+{# ------------------------------------------------------------------ QUOTE #}
+<section class="quote">
+  {% picture site.cta_image alt="" sizes="100vw" cls="quote__bg" fallback="tours/img/hero.webp" width=1600 height=900 %}
+  <div class="container quote__inner" data-reveal>
+    <svg class="quote__mark" viewBox="0 0 48 36" aria-hidden="true"><path fill="currentColor" d="M0 36V22C0 9.8 6.2 2.5 18.5 0l2 4.6C13.4 6.8 9.8 11 9.5 17H19v19H0zm29 0V22C29 9.8 35.2 2.5 47.5 0l2 4.6C42.4 6.8 38.8 11 38.5 17H48v19H29z"/></svg>
+    <blockquote>You don't just visit Tanzania — you <em>experience it</em> through the eyes of local people.</blockquote>
+    <p>{{ site.slogan|default:site.company_name }}</p>
+  </div>
+</section>
+
+{# ------------------------------------------------------------------ WHEN TO GO #}
+<section class="section when" data-seasons>
   <div class="container">
-    <div class="section__head section__head--split">
+    <div class="section__head section__head--center" data-reveal>
+      <p class="eyebrow">Plan the perfect timing</p>
+      <h2>When to go to <em>Tanzania</em></h2>
+      <p class="lead">Tanzania is a year-round destination. Tap a month to see what's happening in the parks, on the mountain and by the sea.</p>
+    </div>
+    <div class="when__months" role="tablist" aria-label="Months">
+      {% for s in seasons %}<button type="button" class="when__month{% if forloop.first %} is-active{% endif %}" role="tab" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}" data-month="{{ forloop.counter0 }}">{{ s.m }}</button>{% endfor %}
+    </div>
+    {% for s in seasons %}
+    <div class="when__panel" data-panel="{{ forloop.counter0 }}"{% if not forloop.first %} hidden{% endif %}>
+      <div class="when__info">
+        <p class="when__name">{{ s.name }}</p>
+        <h3>{{ s.title }}</h3>
+        <p>{{ s.text }}</p>
+        <a href="{% url 'plan_trip' %}?month={{ s.name|urlencode }}" class="link-arrow">Plan a trip in {{ s.name }} <svg class="i"><use href="#i-arrow"/></svg></a>
+      </div>
+      <ul class="when__scores">
+        <li><span>Safari</span><span class="meter meter--{{ s.safari }}"><i></i><i></i><i></i></span><em>{% if s.safari == 3 %}Excellent{% elif s.safari == 2 %}Good{% else %}Green season{% endif %}</em></li>
+        <li><span>Kilimanjaro</span><span class="meter meter--{{ s.kili }}"><i></i><i></i><i></i></span><em>{% if s.kili == 3 %}Excellent{% elif s.kili == 2 %}Good{% else %}Rainy{% endif %}</em></li>
+        <li><span>Zanzibar</span><span class="meter meter--{{ s.zanzibar }}"><i></i><i></i><i></i></span><em>{% if s.zanzibar == 3 %}Excellent{% elif s.zanzibar == 2 %}Good{% else %}Rainy{% endif %}</em></li>
+      </ul>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+{# ------------------------------------------------------------------ DEPARTURES #}
+{% if departures %}
+<section class="section section--night departures-teaser">
+  <div class="container">
+    <div class="section__head section__head--split" data-reveal>
       <div>
         <p class="eyebrow eyebrow--light">Travel solo, share the cost</p>
-        <h2>Group departures {{ site.departures_year }}</h2>
-        <p>Join a scheduled Kilimanjaro climb or safari with other travellers. Fixed dates, clear prices, only a 30% deposit to book your place.</p>
+        <h2>Group departures <em>{{ site.departures_year }}</em></h2>
+        <p>Join a scheduled Kilimanjaro climb or safari with other travellers. Fixed dates, clear prices and only a 30% deposit to book your place.</p>
       </div>
       <a href="{% url 'departures' %}" class="btn btn--accent">See all {{ site.departures_year }} dates</a>
     </div>
     <ul class="dep-mini">
       {% for d in departures %}
-      <li>
+      <li data-reveal>
         <a href="{% url 'departures' %}?type={{ d.kind }}#dep-{{ d.pk }}">
           <span class="dep-mini__date"><strong>{{ d.start_date|date:"d" }}</strong>{{ d.start_date|date:"M Y" }}</span>
           <span class="dep-mini__name">{{ d.name }}<small>{{ d.days }} days · {{ d.get_kind_display }}</small></span>
@@ -128,12 +232,13 @@
 </section>
 {% endif %}
 
+{# ------------------------------------------------------------------ CALL #}
 <section class="section call">
   <div class="container call__inner">
-    <div class="call__img"><img src="{% img site.about_image %}" alt="The Nomad Explorer Tours team with a safari vehicle" loading="lazy" width="640" height="480"></div>
-    <div class="call__text">
+    <div class="call__img" data-reveal>{% picture site.about_image alt="The Nomad Explorer Tours team with a safari vehicle" sizes="(min-width: 760px) 45vw, 100vw" width=800 height=600 %}</div>
+    <div class="call__text" data-reveal>
       <p class="eyebrow">Talk to a local expert</p>
-      <h2>Free call with our Kilimanjaro &amp; safari team</h2>
+      <h2>Free call with our Kilimanjaro &amp; <em>safari team</em></h2>
       <p>Get honest advice about routes, parks, lodges and the best season to travel, straight from our team in Moshi. We'll help you choose the right trip for your time and budget.</p>
       <div class="btn-row">
         <a href="{% wa 'Hello Nomad Explorer Tours, I would like to book a free call about my trip.' %}" class="btn btn--wa" target="_blank" rel="noopener"><svg class="i"><use href="#i-whatsapp"/></svg>Book a free call</a>
@@ -143,16 +248,17 @@
   </div>
 </section>
 
+{# ------------------------------------------------------------------ REVIEWS #}
 <section class="section section--sand reviews">
   <div class="container">
-    <div class="section__head section__head--center">
+    <div class="section__head section__head--center" data-reveal>
       <p class="eyebrow">Reviews</p>
-      <h2>What our travellers say</h2>
+      <h2>What our <em>travellers</em> say</h2>
     </div>
     {% if testimonials %}
     <div class="grid grid--3">
       {% for r in testimonials %}
-      <figure class="review">
+      <figure class="review" data-reveal>
         <div class="review__stars" aria-label="{{ r.rating }} out of 5 stars">{% for s in r.stars %}<svg class="i"><use href="#i-star"/></svg>{% endfor %}</div>
         <blockquote>“{{ r.text }}”</blockquote>
         <figcaption><strong>{{ r.name }}</strong>{% if r.country %}, {{ r.country }}{% endif %}{% if r.trip %}<span>{{ r.trip }}</span>{% endif %}</figcaption>
@@ -161,7 +267,7 @@
     </div>
     {% endif %}
     {% if site.tripadvisor %}
-    <div class="ta-box">
+    <div class="ta-box" data-reveal>
       <svg class="i"><use href="#i-tripadvisor"/></svg>
       <p>Read honest reviews from our climbers and safari guests on TripAdvisor.</p>
       <a href="{{ site.tripadvisor }}" class="btn btn--outline" target="_blank" rel="noopener">Read our reviews</a>
@@ -170,30 +276,13 @@
   </div>
 </section>
 
-<section class="section explore">
-  <div class="container">
-    <div class="section__head section__head--center">
-      <p class="eyebrow">Explore Tanzania</p>
-      <h2>Find your kind of adventure</h2>
-    </div>
-    <div class="cat-grid">
-      {% for c in categories %}
-      <a class="cat-tile" href="{{ c.get_absolute_url }}">
-        <img src="{% img c.image %}" alt="{{ c.name }}" loading="lazy" width="600" height="400">
-        <span class="cat-tile__name">{{ c.name }}</span>
-        {% if c.min_price %}<span class="cat-tile__price">from {{ c.min_price|money }}</span>{% endif %}
-      </a>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-
+{# ------------------------------------------------------------------ FAQ #}
 {% if faqs %}
-<section class="section section--sand">
+<section class="section">
   <div class="container faq-wrap">
-    <div>
+    <div data-reveal>
       <p class="eyebrow">Good to know</p>
-      <h2>Frequently asked questions</h2>
+      <h2>Frequently asked <em>questions</em></h2>
       <p>Can't find your answer? Our team replies quickly on WhatsApp.</p>
       <div class="btn-row">
         <a href="{{ site.whatsapp_url }}" class="btn btn--wa" target="_blank" rel="noopener"><svg class="i"><use href="#i-whatsapp"/></svg>Ask on WhatsApp</a>
@@ -206,15 +295,15 @@
 {% endif %}
 
 {% if guides %}
-<section class="section">
+<section class="section section--ivory">
   <div class="container">
     <div class="section__head section__head--split">
-      <div><p class="eyebrow">Travel guides</p><h2>Stories &amp; tips</h2></div>
+      <div><p class="eyebrow">Travel guides</p><h2>Stories &amp; <em>tips</em></h2></div>
       <a href="{% url 'guides' %}" class="btn btn--outline">Read articles</a>
     </div>
     <div class="grid grid--3">
       {% for g in guides %}
-      <a class="post" href="{{ g.get_absolute_url }}"><img src="{% img g.image %}" alt="" loading="lazy" width="600" height="400"><h3>{{ g.title }}</h3><p>{{ g.intro }}</p></a>
+      <a class="post" href="{{ g.get_absolute_url }}" data-reveal>{% picture g.image alt="" sizes="(min-width: 1000px) 380px, 100vw" width=600 height=400 %}<h3>{{ g.title }}</h3><p>{{ g.intro }}</p></a>
       {% endfor %}
     </div>
   </div>
