@@ -72,6 +72,12 @@ class SiteTests(TestCase):
                 self.assertEqual(res.status_code, 200)
                 self.assertContains(res, "application/ld+json")
 
+    def test_about_page_sections(self):
+        res = self.client.get("/about-us/")
+        for text in ("Who we are", "Our mission", "Our vision", "Our values", "Authenticity", "Personalized Service",
+                     "Travel Local. Explore More. Experience Tanzania."):
+            self.assertContains(res, text)
+
     def test_404(self):
         self.assertEqual(self.client.get("/no-such-page/").status_code, 404)
         self.assertEqual(self.client.get("/kilimanjaro-climbing/no-such-tour/").status_code, 404)

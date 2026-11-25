@@ -81,7 +81,13 @@ class SiteSettingsAdmin(ModelAdmin):
                 ("founded_year", "stat_travellers"), ("stat_summits", "stat_rating"), "cta_image",
             ),
         }),
-        ("About us", {"classes": ["tab"], "fields": ("about_title", "about_text", "about_image")}),
+        ("About us", {
+            "classes": ["tab"],
+            "fields": (
+                "about_title", "about_text", "about_image", "who_we_are", ("mission", "vision"), "values",
+                "about_closing_title", "about_closing_text", "slogan",
+            ),
+        }),
         ("Group departures", {"classes": ["tab"], "fields": ("departures_year",)}),
         ("SEO & analytics", {
             "classes": ["tab"],

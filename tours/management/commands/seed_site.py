@@ -60,7 +60,7 @@ class Command(BaseCommand):
     def load_settings(self, d):
         s = SiteSettings.get()
         changed = False
-        for field in ("about_text", "intro_text"):
+        for field in ("about_text", "intro_text", "who_we_are", "mission", "vision", "values", "about_closing_text"):
             if not getattr(s, field) or self.update:
                 setattr(s, field, d[field])
                 changed = True

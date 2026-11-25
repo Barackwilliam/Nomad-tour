@@ -82,6 +82,17 @@ class SiteSettings(OptimisedImagesMixin, models.Model):
     about_title = models.CharField(max_length=150, default="Discover Tanzania with Nomad Explorer Tours")
     about_text = models.TextField(blank=True, help_text="Main About Us text. Separate paragraphs with an empty line.")
     about_image = models.ImageField(upload_to=upload_to("brand"), blank=True)
+    who_we_are = models.TextField("Who we are", blank=True, help_text="Separate paragraphs with an empty line.")
+    mission = models.TextField("Our mission", blank=True)
+    vision = models.TextField("Our vision", blank=True)
+    values = models.TextField(
+        "Our values",
+        blank=True,
+        help_text="One value per line, written as 'Name: description', e.g. 'Authenticity: Sharing the real Tanzania...'",
+    )
+    about_closing_title = models.CharField(max_length=150, blank=True, default="Experience Tanzania with a Local Company")
+    about_closing_text = models.TextField(blank=True)
+    slogan = models.CharField(max_length=120, blank=True, default="Travel Local. Explore More. Experience Tanzania.")
     cta_image = models.ImageField("Footer call-to-action image", upload_to=upload_to("brand"), blank=True)
     founded_year = models.PositiveIntegerField(default=2019)
     stat_travellers = models.CharField("Happy travellers", max_length=20, default="5,000+")
@@ -154,6 +165,23 @@ class SiteSettings(OptimisedImagesMixin, models.Model):
     @property
     def intro_paragraphs(self):
         return paragraphs(self.intro_text)
+
+    @property
+    def who_we_are_paragraphs(self):
+        return paragraphs(self.who_we_are)
+
+    @property
+    def closing_paragraphs(self):
+        return paragraphs(self.about_closing_text)
+
+    @property
+    def values_list(self):
+        """[(name, description)] from lines like 'Authenticity: Sharing the real Tanzania'."""
+        out = []
+        for line in lines(self.values):
+            name, sep, text = line.partition(":")
+            out.append((name.strip(), text.strip()) if sep else ("", line))
+        return out
 
     @property
     def social_links(self):

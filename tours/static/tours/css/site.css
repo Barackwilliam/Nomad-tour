@@ -581,3 +581,21 @@ fieldset { border: 0; padding: 0; margin: 0; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 }
+
+/* About: mission / vision / values / closing */
+.mv { display: grid; gap: 1.2rem; }
+.mv__card { background: var(--sand); border-radius: var(--radius); padding: 1.8rem; }
+.mv__card .i { width: 36px; height: 36px; color: var(--accent); margin-bottom: .6rem; }
+.mv__card h2 { font-size: 1.7rem; }
+.mv__card p { margin: 0; font-size: 1.05rem; }
+.mv__card--dark { background: var(--dark); color: #dcd8cb; }
+.mv__card--dark h2 { color: #fff; }
+.closing .lead { color: #dcd8cb; }
+.closing__slogan { font-family: var(--serif); font-size: 1.5rem; color: #f6cf8a; margin: 1.2rem 0 0; }
+@media (min-width: 760px) {
+  .mv { grid-template-columns: 1fr 1fr; }
+}
+@media (min-width: 1000px) {
+  .features--values { grid-template-columns: repeat(5, 1fr); }
+}
+.closing { border-bottom: 1px solid rgba(255,255,255,.1); }

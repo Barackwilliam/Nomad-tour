@@ -2,7 +2,7 @@
 {% load tour_tags %}
 
 {% block title %}About Us – Maasai-Owned Tour Operator in Moshi | {{ site.company_name }}{% endblock %}
-{% block description %}{{ site.company_name }} is a locally owned, Maasai-owned tour company in Moshi and Arusha, running private safaris and Kilimanjaro climbs since {{ site.founded_year }}.{% endblock %}
+{% block description %}{{ site.company_name }} is a locally owned, Maasai-owned tour company in Moshi and Arusha, creating tailor-made safaris and Kilimanjaro climbs since {{ site.founded_year }}.{% endblock %}
 
 {% block content %}
 {% include "tours/partials/page_hero.html" with hero_title="About us" hero_text=site.tagline hero_image=site.about_image %}
@@ -17,7 +17,7 @@
     <div class="about__media">
       <img src="{% img site.about_image %}" alt="Our team with one of our safari vehicles" loading="lazy" width="640" height="480">
       <ul class="about__stats">
-        <li><strong>{{ site.founded_year }}</strong><span>founded</span></li>
+        <li><strong>{{ site.founded_year }}</strong><span>established</span></li>
         <li><strong>{{ site.stat_travellers }}</strong><span>travellers</span></li>
         <li><strong>{{ site.stat_rating }}★</strong><span>rating</span></li>
       </ul>
@@ -25,17 +25,53 @@
   </div>
 </section>
 
+{% if site.who_we_are_paragraphs %}
+<section class="section section--sand">
+  <div class="container narrow center">
+    <p class="eyebrow">Who we are</p>
+    <h2>Tanzanian-owned and Maasai-owned</h2>
+    {% for p in site.who_we_are_paragraphs %}<p class="lead">{{ p }}</p>{% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if site.mission or site.vision %}
+<section class="section">
+  <div class="container mv">
+    {% if site.mission %}
+    <div class="mv__card">
+      <svg class="i"><use href="#i-flag"/></svg>
+      <h2>Our mission</h2>
+      <p>{{ site.mission }}</p>
+    </div>
+    {% endif %}
+    {% if site.vision %}
+    <div class="mv__card mv__card--dark">
+      <svg class="i"><use href="#i-compass"/></svg>
+      <h2>Our vision</h2>
+      <p>{{ site.vision }}</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
+
+{% if site.values_list %}
 <section class="section section--sand">
   <div class="container">
-    <div class="section__head section__head--center"><p class="eyebrow">Our values</p><h2>Why travellers choose us</h2></div>
-    <ul class="features features--4">
-      <li><svg class="i"><use href="#i-compass"/></svg><h3>Local expertise</h3><p>Our team lives and works in Tanzania and knows every park, route and hidden gem.</p></li>
-      <li><svg class="i"><use href="#i-users"/></svg><h3>Professional guides</h3><p>Trained safari guides and mountain crews who put your safety and comfort first.</p></li>
-      <li><svg class="i"><use href="#i-heart"/></svg><h3>Personal itineraries</h3><p>Flexible trips for solo travellers, couples, families and groups.</p></li>
-      <li><svg class="i"><use href="#i-leaf"/></svg><h3>Giving back</h3><p>We support local schools, fair employment and conservation.</p></li>
+    <div class="section__head section__head--center"><p class="eyebrow">What we stand for</p><h2>Our values</h2></div>
+    <ul class="features features--values">
+      {% for name, text in site.values_list %}
+      <li>
+        <svg class="i"><use href="#{% cycle 'i-heart' 'i-check' 'i-shield' 'i-leaf' 'i-users' %}"/></svg>
+        {% if name %}<h3>{{ name }}</h3>{% endif %}
+        <p>{{ text }}</p>
+      </li>
+      {% endfor %}
     </ul>
   </div>
 </section>
+{% endif %}
 
 <section class="section">
   <div class="container">
@@ -47,4 +83,20 @@
     </div>
   </div>
 </section>
+
+{% if site.about_closing_title %}
+<section class="section section--dark closing">
+  <div class="container narrow center">
+    <h2>{{ site.about_closing_title }}</h2>
+    {% for p in site.closing_paragraphs %}<p class="lead">{{ p }}</p>{% endfor %}
+    {% if site.slogan %}<p class="closing__slogan">{{ site.slogan }}</p>{% endif %}
+    <div class="btn-row btn-row--center">
+      <a href="{% url 'plan_trip' %}" class="btn btn--accent btn--lg">Start planning</a>
+      <a href="{{ site.whatsapp_url }}" class="btn btn--wa btn--lg" target="_blank" rel="noopener"><svg class="i"><use href="#i-whatsapp"/></svg>WhatsApp us</a>
+    </div>
+  </div>
+</section>
+{% endif %}
 {% endblock %}
+
+{% block footer_cta %}{% endblock %}
