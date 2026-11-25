@@ -16,11 +16,11 @@ Website ya kampuni ya utalii (safari, Kilimanjaro, Zanzibar, day trips) yenye **
 | Kategoria (Kilimanjaro, Safari, Trekking, Zanzibar, Day trips, Climb + Safari) | `/kilimanjaro-climbing/` n.k. |
 | Package moja (itinerary ya siku kwa siku, bei, booking form, WhatsApp) | `/kilimanjaro-climbing/7-days-kilimanjaro-climb-machame-route/` |
 | Tours zote + filter (siku, bei, comfort, search) | `/tours/` |
-| Group joining 2027 (Kilimanjaro + Safari, filter kwa mwezi, "Join group") | `/group-departures/` |
+| Group joining hadi Desemba 2027 (jedwali la Kilimanjaro na la Safari, filter kwa mwezi, "Join group") | `/group-departures/` |
 | Plan my trip / Contact / About / FAQ / Kurasa za taarifa | `/plan-your-trip/`, `/contact/`, `/about-us/`, `/faq/`, `/info/<slug>/` |
 | SEO | `/sitemap.xml`, `/robots.txt`, JSON-LD (TravelAgency, TouristTrip, FAQ, Breadcrumbs, Events) |
 
-**Data ya mwanzo** (`python manage.py seed_site`): packages 49 (44 kutoka nomadexplorertours.com pamoja na itinerary, bei na picha zake + 5 mpya), group departures 47 za 2027, FAQ 17 na kurasa 3 (Why book with us, Giving back, Booking terms).
+**Data ya mwanzo** (`python manage.py seed_site`): packages 49 (44 kutoka nomadexplorertours.com pamoja na itinerary, bei na picha zake + 5 mpya), group departures 56 (Des 2026 – Des 2027), FAQ 17 na kurasa 3 (Why book with us, Giving back, Booking terms).
 
 Anwani za site ya zamani (`...php`) zinaelekezwa (301) kwenye kurasa mpya ili Google isipoteze nafasi.
 
@@ -70,7 +70,7 @@ Render → Settings → Custom domains → ongeza domain ya mteja, kisha weka DN
 
 - **Enquiries & bookings** — kila form ya site inaingia hapa (na email kama imewekwa). Kitufe cha kumjibu kwa WhatsApp/Email, status (New / Replied / Booked).
 - **Tour packages** — kuongeza/kubadilisha package, picha, itinerary ya kila siku, bei kwa idadi ya watu, kuonyesha kwenye home page, SEO title/description. Kitendo cha *Duplicate* kunakili package.
-- **Group departures** — tarehe, bei, nafasi (booked / total), status (Open, Guaranteed, Full). Mwaka unaoonyeshwa unabadilishwa kwenye *Site settings → Group departures*.
+- **Group departures** — tarehe, bei, nafasi (booked / total), status (Open, Guaranteed, Full). Site inaonyesha tarehe zijazo hadi 31 Desemba ya mwaka uliowekwa kwenye *Site settings → Group departures* (sasa 2027).
 - **Site settings** — logo, simu, WhatsApp, email, anwani, social media, picha za home page, maandishi ya About, Google Analytics.
 - **Categories, Pages & guides, FAQs, Reviews.**
 

@@ -118,7 +118,7 @@ def home(request):
             "faqs": list(FAQ.objects.filter(show_on_home=True)[:8]),
             "departures": list(
                 GroupDeparture.objects.upcoming()
-                .filter(start_date__year=site.departures_year)
+                .filter(start_date__lte=site.departures_end)
                 .select_related("tour", "tour__category")[:6]
             ),
             "guides": list(Page.objects.filter(is_published=True, kind="guide").order_by("-created_at")[:3]),
@@ -290,24 +290,43 @@ def tour_detail(request, category_slug, slug):
     return render(request, "tours/tour_detail.html", context)
 
 
+DEPARTURE_GROUPS = [
+    ("kilimanjaro", "Kilimanjaro & mountain climbs", "Climb"),
+    ("safari", "Group joining safaris", "Safari"),
+    ("other", "Other group trips", "Trip"),
+]
+
+
 def departures(request):
     site = SiteSettings.get()
-    year = site.departures_year
+    end = site.departures_end
     kind = request.GET.get("type")
-    kind = kind if kind in ("kilimanjaro", "safari", "other") else ""
-    month = request.GET.get("month")
-    month = int(month) if month and month.isdigit() and 1 <= int(month) <= 12 else None
+    kind = kind if kind in dict((k, 1) for k, _l, _s in DEPARTURE_GROUPS) else ""
+    month = request.GET.get("month", "")
+    month = month if len(month) == 7 and month[:4].isdigit() and month[5:].isdigit() else ""  # "2027-03"
 
     def load():
-        qs = GroupDeparture.objects.upcoming().filter(start_date__year=year).select_related("tour", "tour__category")
+        upcoming = GroupDeparture.objects.upcoming().filter(start_date__lte=end).select_related("tour", "tour__category")
+        all_dates = list(upcoming.values_list("start_date", flat=True))
+        qs = upcoming
         if kind:
             qs = qs.filter(kind=kind)
         if month:
-            qs = qs.filter(start_date__month=month)
-        all_months = GroupDeparture.objects.upcoming().filter(start_date__year=year).values_list("start_date", flat=True)
+            qs = qs.filter(start_date__year=int(month[:4]), start_date__month=int(month[5:]))
+        items = list(qs)
+        groups = []
+        for key, label, short in DEPARTURE_GROUPS:
+            rows = [d for d in items if d.kind == key]
+            if rows:
+                groups.append({"key": key, "label": label, "short": short, "rows": rows,
+                               "first": rows[0].start_date, "last": rows[-1].start_date})
+        months = sorted({d.replace(day=1) for d in all_dates})
         return {
-            "departures": list(qs),
-            "months": [(m, datetime.date(year, m, 1)) for m in sorted({d.month for d in all_months})],
+            "groups": groups,
+            "departures": items,
+            "total": len(all_dates),
+            "period_start": min(all_dates) if all_dates else None,
+            "months": [(m.strftime("%Y-%m"), m) for m in months],
             "group_tours": list(Tour.objects.published().filter(style="group").select_related("category")[:6]),
         }
 
@@ -320,18 +339,23 @@ def departures(request):
     if response:
         return response
 
-    data = cached(f"departures:{year}:{kind}:{month}", load)
+    data = cached(f"departures:{end}:{kind}:{month}", load)
     context = dict(data)
     context.update(
         {
-            "year": year,
-            "year_str": str(year),
+            "year": site.departures_year,
+            "period_end": end,
             "kind": kind,
             "month": month,
             "form": form,
             "open_departure": departure,
             "deposit_percent": 30,
-            "ld_events": seo.departures(data["departures"][:30], site),
+            "ld_events": seo.departures(data["departures"][:40], site),
+            "hero_text": (
+                f"Scheduled safari and mountain departures "
+                f"{'from ' + data['period_start'].strftime('%B %Y') + ' ' if data['period_start'] else ''}"
+                f"until December {site.departures_year}. Travel with others, pay less, keep private-tour quality."
+            ),
         }
     )
     return render(request, "tours/departures.html", context)

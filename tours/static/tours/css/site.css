@@ -775,3 +775,54 @@ a.contact-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg)
   *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
   .js [data-reveal] { opacity: 1; transform: none; }
 }
+
+/* ------------------------------------------------------------------ Group departures tables */
+.btn--dark { background: var(--night); color: #fff; }
+.btn--dark:hover { background: var(--accent); color: #fff; }
+.dep-intro { display: grid; gap: 1.6rem; align-items: end; margin-bottom: 2.4rem; }
+.dep-intro .lead { margin: 0; }
+.dep-facts { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem; }
+.dep-facts li { background: var(--night); color: #cfcabb; border-radius: 16px; padding: 1rem .8rem; text-align: center; }
+.dep-facts strong { display: block; font-family: var(--serif); font-weight: 400; font-size: clamp(1.3rem, 3vw, 1.9rem); color: var(--gold); line-height: 1.1; }
+.dep-facts span { font-size: .74rem; text-transform: uppercase; letter-spacing: .1em; }
+.dep-group { margin-bottom: 2.4rem; border-radius: 20px; overflow: hidden; background: #fff; box-shadow: var(--shadow); border: 1px solid var(--line); scroll-margin-top: calc(var(--header-h) + 16px); }
+.dep-group__bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .4rem 1rem; background: var(--night); color: #cfcabb; padding: 1.1rem 1.3rem; }
+.dep-group__bar h2 { font-family: var(--font); font-size: 1rem; font-weight: 700; color: #fff; margin: 0; letter-spacing: 0; }
+.dep-group__bar h2 span { display: block; font-weight: 500; font-size: .84rem; color: #b7b2a3; margin-top: .15rem; }
+.dep-group__bar p { margin: 0; font-weight: 700; color: var(--gold); font-size: .9rem; }
+.dep-list { list-style: none; margin: 0; padding: 0; }
+.dep-item { display: grid; grid-template-columns: 64px 1fr; gap: .8rem 1rem; align-items: center; padding: 1rem 1.1rem; border-top: 1px solid var(--line); scroll-margin-top: calc(var(--header-h) + 20px); transition: background .25s; }
+.dep-item:first-child { border-top: 0; }
+.dep-item:hover { background: var(--ivory); }
+.dep-item:target { background: #fbf1e1; box-shadow: inset 4px 0 0 var(--accent); }
+.dep-item.is-full { opacity: .6; }
+.dep-date { grid-row: span 2; align-self: start; display: flex; flex-direction: column; align-items: center; border: 2px solid var(--accent); border-radius: 14px; padding: .35rem .2rem .4rem; font-size: .74rem; font-weight: 700; text-transform: uppercase; color: var(--ink); line-height: 1.15; background: #fff; }
+.dep-date strong { font-family: var(--serif); font-weight: 400; font-size: 1.6rem; line-height: 1; }
+.dep-date em { font-style: normal; font-size: .7rem; color: var(--muted); }
+.dep-item__main { display: flex; flex-direction: column; gap: .2rem; min-width: 0; }
+.dep-item__name { font-weight: 700; color: var(--ink); text-decoration: none; line-height: 1.3; }
+a.dep-item__name:hover { color: var(--accent-dark); text-decoration: underline; }
+.dep-item__main small { color: var(--muted); font-size: .84rem; }
+.dep-item__tags { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .7rem; margin-top: .25rem; }
+.dep-note { font-size: .78rem; font-style: italic; color: var(--brand); }
+.dep-private { font-size: .78rem; font-weight: 600; color: var(--muted); text-decoration: underline; text-underline-offset: 2px; }
+.dep-private:hover { color: var(--accent-dark); }
+.dep-item__side { grid-column: 2; display: flex; justify-content: space-between; align-items: center; gap: .6rem; }
+.dep-item__side .btn { padding: .55em .95em; }
+.dep-item__price { display: flex; flex-direction: column; line-height: 1.25; min-width: 0; }
+.dep-item__price strong { font-size: 1.15rem; color: var(--ink); }
+.dep-item__price small { color: var(--muted); font-size: .76rem; white-space: nowrap; }
+.dep-facts li { min-width: 0; }
+@media (max-width: 559px) {
+  .dep-facts strong { font-size: 1.15rem; }
+  .dep-facts span { letter-spacing: .04em; font-size: .68rem; }
+}
+@media (min-width: 860px) {
+  .dep-intro { grid-template-columns: 1.4fr 1fr; gap: 3rem; }
+  .dep-item { grid-template-columns: 70px minmax(0, 1fr) 190px 130px; padding: 1.1rem 1.4rem; }
+  .dep-date { grid-row: auto; align-self: center; }
+  .dep-item__side { display: contents; }
+  .dep-item__cta { justify-self: end; }
+  .dep-group__bar { padding: 1.2rem 1.4rem; }
+  .dep-group__bar h2 { font-size: 1.05rem; }
+}

@@ -106,9 +106,9 @@ class SiteSettings(OptimisedImagesMixin, models.Model):
     )
 
     departures_year = models.PositiveIntegerField(
-        "Group departures year",
+        "Show group departures until (year)",
         default=2027,
-        help_text="The group joining page only lists departures in this year.",
+        help_text="The group joining page lists upcoming departures up to 31 December of this year.",
     )
 
     # SEO
@@ -174,6 +174,10 @@ class SiteSettings(OptimisedImagesMixin, models.Model):
     @property
     def intro_paragraphs(self):
         return paragraphs(self.intro_text)
+
+    @property
+    def departures_end(self):
+        return datetime.date(self.departures_year, 12, 31)
 
     @property
     def hero_slides(self):

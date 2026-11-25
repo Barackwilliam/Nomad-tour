@@ -212,10 +212,10 @@
     <div class="section__head section__head--split" data-reveal>
       <div>
         <p class="eyebrow eyebrow--light">Travel solo, share the cost</p>
-        <h2>Group departures <em>{{ site.departures_year }}</em></h2>
+        <h2>Group departures <em>until {{ site.departures_year }}</em></h2>
         <p>Join a scheduled Kilimanjaro climb or safari with other travellers. Fixed dates, clear prices and only a 30% deposit to book your place.</p>
       </div>
-      <a href="{% url 'departures' %}" class="btn btn--accent">See all {{ site.departures_year }} dates</a>
+      <a href="{% url 'departures' %}" class="btn btn--accent">See all dates</a>
     </div>
     <ul class="dep-mini">
       {% for d in departures %}

@@ -4852,6 +4852,41 @@
   {
    "kind": "safari",
    "tour": "3-days-group-joining-safari",
+   "start": "2026-12-05",
+   "price": 850,
+   "note": ""
+  },
+  {
+   "kind": "safari",
+   "tour": "4-days-group-joining-wildebeest-migration-safari",
+   "start": "2026-12-12",
+   "price": 880,
+   "note": "Herds arriving in the southern Serengeti"
+  },
+  {
+   "kind": "kilimanjaro",
+   "tour": "7-days-kilimanjaro-climb-machame-route",
+   "start": "2026-12-14",
+   "price": 1700,
+   "note": ""
+  },
+  {
+   "kind": "safari",
+   "tour": "3-days-group-joining-safari",
+   "start": "2026-12-19",
+   "price": 850,
+   "note": "Christmas on safari"
+  },
+  {
+   "kind": "kilimanjaro",
+   "tour": "8-days-kilimanjaro-climb-lemosho-route",
+   "start": "2026-12-26",
+   "price": 2040,
+   "note": "New Year's summit on Uhuru Peak"
+  },
+  {
+   "kind": "safari",
+   "tour": "3-days-group-joining-safari",
    "start": "2027-01-03",
    "price": 850,
    "note": ""
@@ -4904,6 +4939,13 @@
    "start": "2027-02-09",
    "price": 880,
    "note": "Calving season in the southern Serengeti"
+  },
+  {
+   "kind": "kilimanjaro",
+   "tour": "8-days-kilimanjaro-climb-northern-circuit",
+   "start": "2027-02-12",
+   "price": 2200,
+   "note": ""
   },
   {
    "kind": "safari",
@@ -4967,6 +5009,13 @@
    "start": "2027-06-05",
    "price": 1870,
    "note": ""
+  },
+  {
+   "kind": "kilimanjaro",
+   "tour": "4-days-mount-meru-climb",
+   "start": "2027-06-10",
+   "price": 920,
+   "note": "Great acclimatisation before Kilimanjaro"
   },
   {
    "kind": "safari",
@@ -5096,6 +5145,13 @@
   },
   {
    "kind": "kilimanjaro",
+   "tour": "8-days-kilimanjaro-climb-northern-circuit",
+   "start": "2027-09-17",
+   "price": 2200,
+   "note": ""
+  },
+  {
+   "kind": "kilimanjaro",
    "tour": "6-days-kilimanjaro-climb-marangu-route",
    "start": "2027-09-24",
    "price": 1560,
@@ -5114,6 +5170,13 @@
    "start": "2027-10-08",
    "price": 2040,
    "note": "Full moon summit"
+  },
+  {
+   "kind": "kilimanjaro",
+   "tour": "4-days-mount-meru-climb",
+   "start": "2027-10-14",
+   "price": 920,
+   "note": ""
   },
   {
    "kind": "safari",

@@ -149,7 +149,7 @@
       <ul>
         {% for item in menu %}<li><a href="{{ item.category.get_absolute_url }}">{{ item.category.name }}</a></li>{% endfor %}
         {% for extra in menu_extra %}<li><a href="{{ extra.get_absolute_url }}">{{ extra.name }}</a></li>{% endfor %}
-        <li><a href="{% url 'departures' %}">Group departures {{ site.departures_year }}</a></li>
+        <li><a href="{% url 'departures' %}">Group joining departures</a></li>
         <li><a href="{% url 'tour_list' %}">All tours</a></li>
       </ul>
     </div>

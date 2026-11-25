@@ -63,7 +63,7 @@ class SiteTests(TestCase):
         urls = [
             "/", "/tours/", "/tours/?category=day-trips&days=1&sort=price", "/tours/?q=serengeti",
             cat.get_absolute_url(), cat.get_absolute_url() + "?level=camping", self.tour.get_absolute_url(),
-            "/group-departures/", "/group-departures/?type=safari&month=7", "/plan-your-trip/",
+            "/group-departures/", "/group-departures/?type=safari&month=2027-07", "/group-departures/?month=bad", "/plan-your-trip/",
             "/plan-your-trip/?trip=Kilimanjaro+climb&month=June+2027&tour=" + self.tour.slug,
             "/contact/", "/about-us/", "/faq/", "/travel-guides/", "/info/booking-terms-and-conditions/",
             "/thank-you/", "/sitemap.xml", "/robots.txt",
@@ -147,6 +147,24 @@ class SiteTests(TestCase):
         self.assertEqual(enquiry.departure, self.departure)
         self.assertEqual(enquiry.tour, self.tour)
         self.assertEqual(enquiry.travel_date, self.departure.start_date)
+
+    def test_departures_shown_from_today_until_end_of_year(self):
+        soon = GroupDeparture.objects.create(
+            kind="safari", tour=self.tour, start_date=datetime.date.today() + datetime.timedelta(days=5), price=900
+        )
+        past = GroupDeparture.objects.create(
+            kind="safari", tour=self.tour, start_date=datetime.date.today() - datetime.timedelta(days=5), price=900
+        )
+        res = self.client.get("/group-departures/")
+        self.assertContains(res, f'id="dep-{soon.pk}"')
+        self.assertNotContains(res, f'id="dep-{past.pk}"')
+        self.assertContains(res, "Kilimanjaro &amp; mountain climbs")
+        self.assertContains(res, "Group joining safaris")
+        self.assertContains(res, f"until December {SiteSettings.get().departures_year}")
+        res = self.client.get("/group-departures/?type=safari")
+        self.assertNotContains(res, "Kilimanjaro &amp; mountain climbs")
+        month = soon.start_date.strftime("%Y-%m")
+        self.assertContains(self.client.get(f"/group-departures/?month={month}"), f'id="dep-{soon.pk}"')
 
     def test_departures_only_show_configured_year(self):
         other = GroupDeparture.objects.create(
