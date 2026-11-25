@@ -62,8 +62,14 @@
         <img class="logo__white" src="{% static 'tours/img/logo-white.png' %}" alt="" width="190" height="48" aria-hidden="true">
       </a>
 
+      <div class="nav-overlay" id="nav-overlay" hidden></div>
       <nav class="nav" id="nav" aria-label="Main menu">
+        <div class="nav__head">
+          <img src="{% static 'tours/img/logo-white.png' %}" alt="{{ site.company_name }}" width="160" height="40">
+          <button class="nav__close" id="nav-close" type="button" aria-label="Close menu"><svg class="i"><use href="#i-close"/></svg></button>
+        </div>
         <ul class="nav__list">
+          <li class="nav__item nav__item--mob"><a href="{% url 'home' %}" class="nav__link">Home</a></li>
           {% for item in menu %}
           <li class="nav__item has-drop">
             <a href="{{ item.category.get_absolute_url }}" class="nav__link">{{ item.category.label }}<svg class="i chev" aria-hidden="true"><use href="#i-chevron"/></svg></a>
@@ -96,6 +102,9 @@
         <div class="nav__mobile-cta">
           <a href="{% url 'plan_trip' %}" class="btn btn--accent btn--block">Plan My Trip</a>
           <a href="{{ site.whatsapp_url }}" class="btn btn--wa btn--block" target="_blank" rel="noopener"><svg class="i"><use href="#i-whatsapp"/></svg>WhatsApp us</a>
+          <a href="tel:{{ site.phone_link }}" class="nav__contact"><svg class="i"><use href="#i-phone"/></svg>{{ site.phone }}</a>
+          <a href="mailto:{{ site.email }}" class="nav__contact"><svg class="i"><use href="#i-mail"/></svg>{{ site.email }}</a>
+          <div class="socials">{% for key, label, url in site.social_links %}<a href="{{ url }}" target="_blank" rel="noopener" aria-label="{{ label }}"><svg class="i"><use href="#i-{{ key }}"/></svg></a>{% endfor %}</div>
         </div>
       </nav>
 

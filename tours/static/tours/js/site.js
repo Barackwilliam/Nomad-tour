@@ -29,17 +29,23 @@
     });
   }
 
-  // ---------------------------------------------------------------- Mobile menu
+  // ---------------------------------------------------------------- Mobile menu: left sidebar
   var burger = document.getElementById("burger");
   var nav = document.getElementById("nav");
+  var navClose = document.getElementById("nav-close");
+  var navOverlay = document.getElementById("nav-overlay");
   if (burger && nav) {
-    burger.addEventListener("click", function () {
-      nav.style.setProperty("--nav-top", header.getBoundingClientRect().bottom + "px");
-      var open = nav.classList.toggle("is-open");
+    var setNav = function (open) {
+      nav.classList.toggle("is-open", open);
+      if (navOverlay) navOverlay.hidden = !open;
       burger.setAttribute("aria-expanded", open ? "true" : "false");
-      header.classList.toggle("menu-open", open);
       document.body.classList.toggle("nav-open", open);
-    });
+      if (open && navClose) navClose.focus();
+    };
+    burger.addEventListener("click", function () { setNav(!nav.classList.contains("is-open")); });
+    if (navClose) navClose.addEventListener("click", function () { setNav(false); burger.focus(); });
+    if (navOverlay) navOverlay.addEventListener("click", function () { setNav(false); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && nav.classList.contains("is-open")) setNav(false); });
     nav.querySelectorAll(".nav__toggle").forEach(function (btn) {
       btn.addEventListener("click", function () {
         var drop = btn.parentElement.querySelector(".drop");
