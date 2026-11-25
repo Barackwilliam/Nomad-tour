@@ -134,7 +134,7 @@ def departures(items, site):
                         "price": str(d.price),
                         "priceCurrency": "USD",
                         "availability": "https://schema.org/SoldOut" if d.is_full else "https://schema.org/InStock",
-                        "url": settings.SITE_URL + f"/group-departures/#dep-{d.pk}",
+                        "url": absolute(d.get_absolute_url()),
                     },
                 },
             }

@@ -220,7 +220,7 @@
     <ul class="dep-mini">
       {% for d in departures %}
       <li data-reveal>
-        <a href="{% url 'departures' %}?type={{ d.kind }}#dep-{{ d.pk }}">
+        <a href="{{ d.get_absolute_url }}">
           <span class="dep-mini__date"><strong>{{ d.start_date|date:"d" }}</strong>{{ d.start_date|date:"M Y" }}</span>
           <span class="dep-mini__name">{{ d.name }}<small>{{ d.days }} days · {{ d.get_kind_display }}</small></span>
           <span class="dep-mini__price">{{ d.price|money }}<small>{% with st=d.display_status %}{{ st.1 }}{% endwith %}</small></span>

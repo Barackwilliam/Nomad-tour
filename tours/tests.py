@@ -148,6 +148,32 @@ class SiteTests(TestCase):
         self.assertEqual(enquiry.tour, self.tour)
         self.assertEqual(enquiry.travel_date, self.departure.start_date)
 
+    def test_departure_links_to_itinerary_with_date_selected(self):
+        url = self.departure.get_absolute_url()
+        self.assertEqual(url, f"{self.tour.get_absolute_url()}?departure={self.departure.pk}#book")
+        self.assertContains(self.client.get("/group-departures/"), f"?departure={self.departure.pk}#book")
+        res = self.client.get(f"{self.tour.get_absolute_url()}?departure={self.departure.pk}")
+        self.assertContains(res, "Joining a group departure")
+        self.assertContains(res, f'name="departure_id" value="{self.departure.pk}"')
+        self.assertContains(res, self.departure.start_date.isoformat())  # travel date filled in
+        # booking from the itinerary page is linked to that departure
+        res = self.client.post(
+            f"{self.tour.get_absolute_url()}?departure={self.departure.pk}",
+            {"form": "enquiry", "departure_id": self.departure.pk, "full_name": "Ana", "email": "ana@example.com", "adults": 2},
+        )
+        self.assertRedirects(res, reverse("thank_you"))
+        enquiry = Enquiry.objects.get()
+        self.assertEqual((enquiry.source, enquiry.departure, enquiry.tour), ("departure", self.departure, self.tour))
+        self.assertEqual(enquiry.travel_date, self.departure.start_date)
+
+    def test_unknown_or_full_departure_is_ignored(self):
+        res = self.client.get(f"{self.tour.get_absolute_url()}?departure=999999")
+        self.assertNotContains(res, "Joining a group departure")
+        self.departure.status = "full"
+        self.departure.save()
+        res = self.client.get(f"{self.tour.get_absolute_url()}?departure={self.departure.pk}")
+        self.assertNotContains(res, "Joining a group departure")
+
     def test_departures_shown_from_today_until_end_of_year(self):
         soon = GroupDeparture.objects.create(
             kind="safari", tour=self.tour, start_date=datetime.date.today() + datetime.timedelta(days=5), price=900

@@ -263,7 +263,9 @@ def tour_detail(request, category_slug, slug):
         return {
             "tour": tour,
             "related": sorted(related, key=lambda t: abs(t.duration_days - tour.duration_days))[:3],
-            "departures": list(tour.departures.upcoming()[:6]),
+            "departures": list(
+                tour.departures.upcoming().filter(start_date__lte=SiteSettings.get().departures_end)[:12]
+            ),
         }
 
     data = cached(f"tour:{slug}", load)
@@ -272,15 +274,26 @@ def tour_detail(request, category_slug, slug):
     tour = data["tour"]
     if tour.category.slug != category_slug:
         return redirect(tour.get_absolute_url(), permanent=True)
-    form, response = handle_enquiry(request, "tour", tour=tour)
+    # A group departure chosen on the departures page (?departure=ID) or in the booking form.
+    departure = None
+    dep_id = request.POST.get("departure_id") or request.GET.get("departure")
+    if dep_id and str(dep_id).isdigit():
+        departure = next((d for d in data["departures"] if d.pk == int(dep_id)), None)
+    if departure and departure.is_full:
+        departure = None
+    form, response = handle_enquiry(request, "departure" if departure else "tour", tour=tour, departure=departure)
     if response:
         return response
     site = SiteSettings.get()
     context = dict(data)
+    wa_text = f"Hello {site.company_name}, I am interested in the {tour.title}"
+    if departure:
+        wa_text += f" group departure on {departure.start_date:%d %B %Y}"
     context.update(
         {
             "form": form,
-            "wa_text": f"Hello {site.company_name}, I am interested in the {tour.title}. Is it available?",
+            "departure": departure,
+            "wa_text": wa_text + ". Is it available?",
             "ld_tour": seo.tour(tour, site),
             "ld_crumbs": seo.breadcrumbs(
                 [(tour.category.name, tour.category.get_absolute_url()), (tour.title, tour.get_absolute_url())]

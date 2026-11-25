@@ -1,4 +1,5 @@
 import datetime
+import re
 
 from django.core.cache import cache
 from django.db import models
@@ -13,8 +14,20 @@ def lines(text):
     return [ln.strip(" -•\t") for ln in (text or "").splitlines() if ln.strip(" -•\t")]
 
 
+_SENTENCE_END = re.compile(r"[.!?:;\"”’)\]]$")
+
+
 def paragraphs(text):
-    return [p.strip() for p in (text or "").replace("\r\n", "\n").split("\n\n") if p.strip()]
+    """Split text into paragraphs. Text copied from old websites often has a line break in the
+    middle of a sentence; such pieces are joined back together."""
+    chunks = [" ".join(p.split()) for p in (text or "").replace("\r\n", "\n").split("\n\n") if p.strip()]
+    out = []
+    for chunk in chunks:
+        if out and not _SENTENCE_END.search(out[-1]) and (chunk[:1].islower() or len(out[-1]) > 45):
+            out[-1] = f"{out[-1]} {chunk}"
+        else:
+            out.append(chunk)
+    return out
 
 
 class SEOFields(models.Model):
@@ -506,6 +519,12 @@ class GroupDeparture(models.Model):
     @property
     def name(self):
         return self.title or (self.tour.title if self.tour else "Group departure")
+
+    def get_absolute_url(self):
+        """The itinerary page with this date already chosen in the booking form."""
+        if self.tour_id:
+            return f"{self.tour.get_absolute_url()}?departure={self.pk}#book"
+        return f"{reverse('departures')}#dep-{self.pk}"
 
     @property
     def spaces_left(self):

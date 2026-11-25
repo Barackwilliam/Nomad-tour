@@ -20,6 +20,15 @@
     onScroll();
   }
 
+  // ---------------------------------------------------------------- Land exactly on #book / #dates even if the page
+  // grew while loading (photos, fonts), e.g. when coming from a group departure link.
+  if (location.hash && /^#[\w-]+$/.test(location.hash)) {
+    window.addEventListener("load", function () {
+      var target = document.querySelector(location.hash);
+      if (target) setTimeout(function () { target.scrollIntoView({ block: "start" }); }, 60);
+    });
+  }
+
   // ---------------------------------------------------------------- Mobile menu
   var burger = document.getElementById("burger");
   var nav = document.getElementById("nav");

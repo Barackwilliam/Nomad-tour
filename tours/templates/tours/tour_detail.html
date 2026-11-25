@@ -133,12 +133,13 @@
     {% if departures %}
     <section id="dates" class="block">
       <h2>Group departure dates</h2>
+      <p class="muted">Pick a date to join a scheduled group. Your date is filled in on the booking form.</p>
       <ul class="dep-mini dep-mini--light">
         {% for d in departures %}
-        <li><a href="{% url 'departures' %}#dep-{{ d.pk }}">
+        <li{% if departure.pk == d.pk %} class="is-selected"{% endif %}><a href="{% if d.is_full %}{% url 'departures' %}#dep-{{ d.pk }}{% else %}{{ d.get_absolute_url }}{% endif %}">
           <span class="dep-mini__date"><strong>{{ d.start_date|date:"d" }}</strong>{{ d.start_date|date:"M Y" }}</span>
           <span class="dep-mini__name">{{ d.name }}<small>{% with st=d.display_status %}{{ st.1 }}{% endwith %}{% if d.note %} · {{ d.note }}{% endif %}</small></span>
-          <span class="dep-mini__price">{{ d.price|money }}<small>Join group →</small></span>
+          <span class="dep-mini__price">{{ d.price|money }}<small>{% if departure.pk == d.pk %}Selected ✓{% elif d.is_full %}Fully booked{% else %}Join this date →{% endif %}</small></span>
         </a></li>
         {% endfor %}
       </ul>
@@ -149,12 +150,27 @@
   <aside class="tour-side" id="book">
     <div class="book-box">
       <div class="book-box__price">
-        {% if tour.price_from %}<span>From</span><strong>{{ tour.price_from|money }}</strong><span>{{ tour.price_note }}</span>{% else %}<strong>Price on request</strong>{% endif %}
+        {% if departure %}<strong>{{ departure.price|money }}</strong><span>per person · group price</span>
+        {% elif tour.price_from %}<span>From</span><strong>{{ tour.price_from|money }}</strong><span>{{ tour.price_note }}</span>{% else %}<strong>Price on request</strong>{% endif %}
       </div>
+      {% if departure %}
+      {% with st=departure.display_status %}
+      <div class="book-box__dep">
+        <p class="eyebrow">Joining a group departure</p>
+        <p class="book-box__dep-date">{{ departure.start_date|date:"d M Y" }}{% if departure.end_date %} – {{ departure.end_date|date:"d M Y" }}{% endif %}</p>
+        <p class="book-box__dep-meta"><span class="badge badge--{{ st.0 }}">{{ st.1 }}</span> {{ departure.deposit_percent }}% deposit: {{ departure.deposit|money }}</p>
+        <a href="{{ tour.get_absolute_url }}#dates" class="book-box__change">Change date</a>
+      </div>
+      {% endwith %}
+      <h2 class="book-box__title">Reserve your place</h2>
+      {% else %}
       <h2 class="book-box__title">Book this tour</h2>
-      <form method="post" action="#book" novalidate>
+      {% if departures %}<p class="book-box__hint">Prefer to travel with a group? <a href="#dates">Choose a group date</a></p>{% endif %}
+      {% endif %}
+      <form method="post" action="{% if departure %}?departure={{ departure.pk }}{% endif %}#book" novalidate>
         {% csrf_token %}
-        {% include "tours/partials/enquiry_form.html" with compact=True submit_label="Check availability" %}
+        {% if departure %}<input type="hidden" name="departure_id" value="{{ departure.pk }}">{% endif %}
+        {% if departure %}{% include "tours/partials/enquiry_form.html" with compact=True submit_label="Reserve my place" %}{% else %}{% include "tours/partials/enquiry_form.html" with compact=True submit_label="Check availability" %}{% endif %}
       </form>
       <div class="book-box__alt">
         <a href="{% wa wa_text %}" class="btn btn--wa btn--block" target="_blank" rel="noopener"><svg class="i"><use href="#i-whatsapp"/></svg>WhatsApp us</a>

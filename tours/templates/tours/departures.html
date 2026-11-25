@@ -62,7 +62,7 @@
         <li class="dep-item{% if d.is_full %} is-full{% endif %}" id="dep-{{ d.pk }}">
           <span class="dep-date"><strong>{{ d.start_date|date:"d" }}</strong>{{ d.start_date|date:"M" }}<em>{{ d.start_date|date:"Y" }}</em></span>
           <span class="dep-item__main">
-            {% if d.tour %}<a class="dep-item__name" href="{{ d.tour.get_absolute_url }}">{{ d.name }}</a>{% else %}<strong class="dep-item__name">{{ d.name }}</strong>{% endif %}
+            {% if d.tour %}<a class="dep-item__name" href="{{ d.get_absolute_url }}">{{ d.name }}</a>{% else %}<strong class="dep-item__name">{{ d.name }}</strong>{% endif %}
             <small>{% if d.end_date %}{{ d.start_date|date:"d M" }} – {{ d.end_date|date:"d M Y" }}{% if d.days %} · {{ d.days }} days{% endif %}{% elif d.days %}{{ d.days }} days{% endif %}</small>
             <span class="dep-item__tags">
               <span class="badge badge--{{ st.0 }}">{{ st.1 }}</span>
@@ -75,6 +75,8 @@
           <span class="dep-item__cta">
             {% if d.is_full %}
               {% with txt="Hello, I would like to join the waiting list for "|add:d.name %}<a class="btn btn--outline btn--sm" href="{% wa txt %}" target="_blank" rel="noopener">Waiting list</a>{% endwith %}
+            {% elif d.tour %}
+              <a class="btn btn--dark btn--sm" href="{{ d.get_absolute_url }}">View &amp; join</a>
             {% else %}
               <button type="button" class="btn btn--dark btn--sm" data-join="{{ d.pk }}" data-name="{{ d.name }}" data-date="{{ d.start_date|date:'d F Y' }}" data-iso="{{ d.start_date|date:'Y-m-d' }}" data-price="{{ d.price|money }}">Join group</button>
             {% endif %}
