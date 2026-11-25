@@ -8,59 +8,71 @@
 {% block content %}
 {# ------------------------------------------------------------------ HERO #}
 <section class="hero" data-hero>
-  <div class="hero__slides">
-    {% for im in site.hero_slides %}
-      {% if forloop.first %}
-        <div class="hero__slide is-active">{% picture im alt="" sizes="100vw" priority=True width=1920 height=1080 %}</div>
-      {% else %}
-        <div class="hero__slide"><img data-src="{{ im.url }}" data-srcset="{% srcset im %}" sizes="100vw" alt="" width="1920" height="1080" decoding="async"></div>
-      {% endif %}
-    {% empty %}
-      <div class="hero__slide is-active"><img src="{% static 'tours/img/hero.webp' %}" alt="" width="1600" height="900" fetchpriority="high"></div>
-    {% endfor %}
-  </div>
+  <div class="hero__frame">
+    <div class="hero__slides">
+      {% for im in site.hero_slides %}
+        {% if forloop.first %}
+          <div class="hero__slide is-active">{% picture im alt="" sizes="(min-width: 1100px) calc(100vw - 300px), 100vw" priority=True width=1920 height=1080 %}</div>
+        {% else %}
+          <div class="hero__slide"><img data-src="{{ im.url }}" data-srcset="{% srcset im %}" sizes="(min-width: 1100px) calc(100vw - 300px), 100vw" alt="" width="1920" height="1080" decoding="async"></div>
+        {% endif %}
+      {% empty %}
+        <div class="hero__slide is-active"><img src="{% static 'tours/img/hero.webp' %}" alt="" width="1600" height="900" fetchpriority="high"></div>
+      {% endfor %}
+    </div>
 
-  <div class="container hero__inner">
-    <div class="hero__copy">
-      <p class="eyebrow eyebrow--light">Maasai-owned · Moshi &amp; Arusha · Since {{ site.founded_year }}</p>
+    <div class="hero__content">
+      <p class="hero__kicker"><span class="hero__pulse"></span>Locally owned · Maasai-owned · Since {{ site.founded_year }}</p>
       <h1 class="hero__title">{{ site.hero_title|accent:"Tanzania" }}</h1>
       <p class="hero__lead">{{ site.hero_subtitle }}</p>
       <div class="btn-row">
-        <a href="#adventures" class="btn btn--accent btn--lg">Explore our trips</a>
-        <a href="{{ site.whatsapp_url }}" class="btn btn--glass btn--lg" target="_blank" rel="noopener"><svg class="i"><use href="#i-whatsapp"/></svg>Talk to a local expert</a>
+        <a href="#adventures" class="btn btn--light btn--lg">Explore our trips <svg class="i"><use href="#i-arrow"/></svg></a>
+        <a href="{% url 'departures' %}" class="btn btn--glass btn--lg"><svg class="i"><use href="#i-users"/></svg>Group departures</a>
       </div>
     </div>
 
-    <form class="planner" action="{% url 'plan_trip' %}" method="get">
-      <p class="planner__title">Where do we start?</p>
-      <div class="planner__tabs" role="radiogroup" aria-label="Type of trip">
-        <label><input type="radio" name="trip" value="Wildlife safari" checked><span>Safari</span></label>
-        <label><input type="radio" name="trip" value="Kilimanjaro climb"><span>Kilimanjaro</span></label>
-        <label><input type="radio" name="trip" value="Zanzibar beach"><span>Zanzibar</span></label>
-      </div>
-      <label class="planner__label" for="planner-month">When would you like to travel?</label>
-      <select id="planner-month" name="month">
+    {% if site.hero_slides|length > 1 %}
+    <div class="hero__counter" aria-hidden="true">
+      <span class="hero__num" data-hero-num>01</span><span class="hero__of">/ {{ site.hero_slides|length|stringformat:"02d" }}</span>
+    </div>
+    <div class="hero__dots" role="group" aria-label="Hero photos">
+      {% for im in site.hero_slides %}<button type="button" class="hero__dot{% if forloop.first %} is-active{% endif %}" aria-label="Photo {{ forloop.counter }}" data-slide="{{ forloop.counter0 }}"></button>{% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <form class="finder" action="{% url 'plan_trip' %}" method="get" aria-label="Plan your trip">
+    <label class="finder__field">
+      <span class="finder__label"><svg class="i"><use href="#i-compass"/></svg>Experience</span>
+      <select name="trip">
+        <option value="Wildlife safari">Wildlife safari</option>
+        <option value="Kilimanjaro climb">Kilimanjaro climb</option>
+        <option value="Zanzibar beach">Zanzibar beach</option>
+        <option value="Group joining">Group joining</option>
+        <option value="Day trips">Day trip</option>
+      </select>
+    </label>
+    <label class="finder__field">
+      <span class="finder__label"><svg class="i"><use href="#i-calendar"/></svg>When</span>
+      <select name="month">
         {% for m in months %}<option value="{{ m|date:'F Y' }}">{{ m|date:"F Y" }}</option>{% endfor %}
       </select>
-      <button type="submit" class="btn btn--accent btn--block btn--lg">Design my trip <svg class="i"><use href="#i-arrow"/></svg></button>
-      <p class="planner__note"><svg class="i"><use href="#i-check"/></svg>Free itinerary &amp; quote within 24h</p>
-    </form>
-  </div>
+    </label>
+    <label class="finder__field">
+      <span class="finder__label"><svg class="i"><use href="#i-users"/></svg>Travellers</span>
+      <select name="people">
+        <option value="1">1 traveller</option><option value="2" selected>2 travellers</option><option value="3-4">3 – 4 travellers</option><option value="5-8">5 – 8 travellers</option><option value="9+">9+ travellers</option>
+      </select>
+    </label>
+    <button type="submit" class="btn btn--accent btn--lg finder__go">Design my trip <svg class="i"><use href="#i-arrow"/></svg></button>
+  </form>
 
-  <div class="hero__bar">
-    <div class="container hero__bar-inner">
-      <ul class="hero__stats">
-        <li><strong>{{ site.years_experience }}+</strong><span>years guiding</span></li>
-        <li><strong>{{ site.stat_travellers }}</strong><span>happy travellers</span></li>
-        {% if site.stat_rating %}<li><strong>{{ site.stat_rating }}<svg class="i"><use href="#i-star"/></svg></strong><span>TripAdvisor rating</span></li>{% else %}<li><strong>100%</strong><span>local team</span></li>{% endif %}
-      </ul>
-      {% if site.hero_slides|length > 1 %}
-      <div class="hero__dots" role="group" aria-label="Hero photos">
-        {% for im in site.hero_slides %}<button type="button" class="hero__dot{% if forloop.first %} is-active{% endif %}" aria-label="Photo {{ forloop.counter }}" data-slide="{{ forloop.counter0 }}"></button>{% endfor %}
-      </div>
-      {% endif %}
-    </div>
-  </div>
+  <ul class="hero__stats container">
+    <li><strong>{{ site.years_experience }}+</strong><span>years guiding in Tanzania</span></li>
+    <li><strong>{{ site.stat_travellers }}</strong><span>happy travellers</span></li>
+    {% if site.stat_rating %}<li><strong>{{ site.stat_rating }}<svg class="i"><use href="#i-star"/></svg></strong><span>TripAdvisor rating</span></li>{% endif %}
+    <li><strong>100%</strong><span>own guides &amp; vehicles</span></li>
+  </ul>
 </section>
 
 {# ------------------------------------------------------------------ MARQUEE #}

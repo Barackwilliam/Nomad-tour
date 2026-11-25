@@ -7,7 +7,7 @@
   <meta name="description" content="{% block description %}{{ site.meta_description }}{% endblock %}">
   <link rel="canonical" href="{% block canonical %}{{ canonical_url }}{% endblock %}">
   {% if site.google_site_verification %}<meta name="google-site-verification" content="{{ site.google_site_verification }}">{% endif %}
-  <meta name="theme-color" content="#15170f">
+  <meta name="theme-color" content="#11261c">
 
   <meta property="og:type" content="{% block og_type %}website{% endblock %}">
   <meta property="og:site_name" content="{{ site.company_name }}">
@@ -20,11 +20,10 @@
   <link rel="icon" href="{% static 'tours/img/favicon.png' %}" type="image/png">
   <link rel="apple-touch-icon" href="{% static 'tours/img/favicon.png' %}">
   <link rel="preload" href="{% static 'tours/fonts/inter-var.woff2' %}" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="{% static 'tours/fonts/dm-serif-display.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{% static 'tours/fonts/fraunces.woff2' %}" as="font" type="font/woff2" crossorigin>
   <style>
     @font-face{font-family:"Inter";src:url("{% static 'tours/fonts/inter-var.woff2' %}") format("woff2");font-weight:100 900;font-display:swap}
-    @font-face{font-family:"DM Serif Display";src:url("{% static 'tours/fonts/dm-serif-display.woff2' %}") format("woff2");font-weight:400;font-display:swap}
-    @font-face{font-family:"DM Serif Display";src:url("{% static 'tours/fonts/dm-serif-display-italic.woff2' %}") format("woff2");font-weight:400;font-style:italic;font-display:swap}
+    @font-face{font-family:"Fraunces";src:url("{% static 'tours/fonts/fraunces.woff2' %}") format("woff2");font-weight:100 900;font-display:swap}
   </style>
   <link rel="stylesheet" href="{% static 'tours/css/site.css' %}">
   <script>document.documentElement.classList.add("js")</script>
@@ -39,74 +38,75 @@
 <body class="{% block hero_mode %}has-hero{% endblock %} {% block body_class %}{% endblock %}">
 <a class="skip-link" href="#main">Skip to content</a>
 
-<div class="masthead" id="masthead">
-  <div class="topbar">
-    <div class="container topbar__inner">
-      <div class="topbar__contacts">
-        <a href="mailto:{{ site.email }}"><svg class="i" aria-hidden="true"><use href="#i-mail"/></svg>{{ site.email }}</a>
-        <a href="tel:{{ site.phone_link }}"><svg class="i" aria-hidden="true"><use href="#i-phone"/></svg>{{ site.phone }}</a>
-      </div>
-      <div class="topbar__right">
-        {% if site.tripadvisor %}<a href="{{ site.tripadvisor }}" target="_blank" rel="noopener" class="topbar__ta"><svg class="i" aria-hidden="true"><use href="#i-tripadvisor"/></svg>Read our TripAdvisor reviews</a>{% endif %}
-        <div class="socials socials--small">
-          {% for key, label, url in site.social_links %}{% if key != 'tripadvisor' %}<a href="{{ url }}" target="_blank" rel="noopener" aria-label="{{ label }}"><svg class="i"><use href="#i-{{ key }}"/></svg></a>{% endif %}{% endfor %}
+<header class="mbar" id="mbar">
+  <a href="{% url 'home' %}" class="mbar__logo" aria-label="{{ site.company_name }} home"><img src="{% static 'tours/img/logo-white.png' %}" alt="{{ site.company_name }}" width="150" height="38"></a>
+  <a href="{% url 'plan_trip' %}" class="btn btn--accent btn--sm mbar__cta">Plan trip</a>
+  <button class="mbar__menu" id="side-open" type="button" aria-label="Open menu" aria-controls="side" aria-expanded="false"><svg class="i"><use href="#i-menu"/></svg></button>
+</header>
+
+<aside class="side" id="side" aria-label="Main menu">
+  <div class="side__top">
+    <a href="{% url 'home' %}" class="side__logo" aria-label="{{ site.company_name }} home">
+      {% if site.logo %}<img src="{{ site.logo.url }}" alt="{{ site.company_name }}" width="190" height="48">{% else %}<img src="{% static 'tours/img/logo-white.png' %}" alt="{{ site.company_name }}" width="190" height="48">{% endif %}
+    </a>
+    <button class="side__close" id="side-close" type="button" aria-label="Close menu"><svg class="i"><use href="#i-close"/></svg></button>
+  </div>
+  <p class="side__tag">Maasai-owned · Moshi &amp; Arusha</p>
+
+  <nav class="side__nav" aria-label="Main">
+    <ul class="side__list">
+      <li class="side__item side__item--mob{% if request.path == '/' %} is-current{% endif %}"><a class="side__link" href="{% url 'home' %}"><svg class="i"><use href="#i-home"/></svg><span>Home</span></a></li>
+      {% for item in menu %}
+      <li class="side__item has-fly{% if item.category.get_absolute_url in request.path %} is-current{% endif %}">
+        <a class="side__link" href="{{ item.category.get_absolute_url }}"><svg class="i"><use href="#i-{{ item.category|cat_icon }}"/></svg><span>{{ item.category.label }}</span><svg class="i side__chev" aria-hidden="true"><use href="#i-chevron"/></svg></a>
+        <button class="side__toggle" type="button" aria-label="Show {{ item.category.label }} trips" aria-expanded="false"><svg class="i"><use href="#i-chevron"/></svg></button>
+        <div class="fly">
+          <a class="fly__hero" href="{{ item.category.get_absolute_url }}">
+            {% if item.category.image %}<img data-src="{{ item.category.image.url }}" data-srcset="{% srcset item.category.image %}" sizes="230px" alt="" width="460" height="560" decoding="async">{% endif %}
+            <span><strong>{{ item.category.name }}</strong><small>{{ item.category.tagline }}</small></span>
+          </a>
+          <ul class="fly__list">
+            {% for t in item.tours %}<li><a href="{% url 'tour' item.category.slug t.slug %}"><span>{{ t.title }}</span><small>{{ t.short_duration }}</small></a></li>{% endfor %}
+          </ul>
+          <div class="fly__more">
+            <a href="{{ item.category.get_absolute_url }}">All {{ item.category.name|lower }} <svg class="i"><use href="#i-arrow"/></svg></a>
+            {% for extra in menu_extra %}{% if forloop.parentloop.counter <= 2 %}<a href="{{ extra.get_absolute_url }}">{{ extra.name }} <svg class="i"><use href="#i-arrow"/></svg></a>{% endif %}{% endfor %}
+          </div>
         </div>
-      </div>
+      </li>
+      {% endfor %}
+      <li class="side__item{% if '/group-departures/' in request.path %} is-current{% endif %}"><a class="side__link" href="{% url 'departures' %}"><svg class="i"><use href="#i-users"/></svg><span>Group departures</span><em class="side__pill">to {{ site.departures_year }}</em></a></li>
+      <li class="side__item has-fly{% if '/about-us/' in request.path or '/info/' in request.path or '/faq/' in request.path %} is-current{% endif %}">
+        <a class="side__link" href="{% url 'about' %}"><svg class="i"><use href="#i-info"/></svg><span>About us</span><svg class="i side__chev" aria-hidden="true"><use href="#i-chevron"/></svg></a>
+        <button class="side__toggle" type="button" aria-label="Show About pages" aria-expanded="false"><svg class="i"><use href="#i-chevron"/></svg></button>
+        <div class="fly fly--small">
+          <ul class="fly__list">
+            <li><a href="{% url 'about' %}"><span>Our story</span></a></li>
+            {% for p in footer_pages %}{% if p.kind == 'page' %}<li><a href="{{ p.get_absolute_url }}"><span>{{ p.title }}</span></a></li>{% endif %}{% endfor %}
+            <li><a href="{% url 'faq' %}"><span>Travel FAQ</span></a></li>
+            <li><a href="{% url 'guides' %}"><span>Travel guides</span></a></li>
+            <li><a href="{% url 'contact' %}"><span>Contact us</span></a></li>
+          </ul>
+        </div>
+      </li>
+      <li class="side__item side__item--mob{% if '/contact/' in request.path %} is-current{% endif %}"><a class="side__link" href="{% url 'contact' %}"><svg class="i"><use href="#i-chat"/></svg><span>Contact</span></a></li>
+    </ul>
+  </nav>
+
+  <div class="side__foot">
+    <a href="{% url 'plan_trip' %}" class="btn btn--accent btn--block">Plan my trip <svg class="i"><use href="#i-arrow"/></svg></a>
+    <a href="{{ site.whatsapp_url }}" class="side__wa" target="_blank" rel="noopener"><svg class="i"><use href="#i-whatsapp"/></svg><span>WhatsApp<small>{{ site.phone }}</small></span></a>
+    <div class="side__links">
+      <a href="mailto:{{ site.email }}"><svg class="i"><use href="#i-mail"/></svg>{{ site.email }}</a>
+    </div>
+    <div class="socials socials--side">
+      {% for key, label, url in site.social_links %}<a href="{{ url }}" target="_blank" rel="noopener" aria-label="{{ label }}"><svg class="i"><use href="#i-{{ key }}"/></svg></a>{% endfor %}
     </div>
   </div>
+</aside>
+<div class="side-overlay" id="side-overlay" hidden></div>
 
-  <header class="header" id="header">
-    <div class="container header__inner">
-      <a href="{% url 'home' %}" class="logo" aria-label="{{ site.company_name }} home">
-        {% if site.logo %}<img class="logo__color" src="{{ site.logo.url }}" alt="{{ site.company_name }}" width="190" height="48">{% else %}<img class="logo__color" src="{% static 'tours/img/logo.png' %}" alt="{{ site.company_name }}" width="190" height="48">{% endif %}
-        <img class="logo__white" src="{% static 'tours/img/logo-white.png' %}" alt="" width="190" height="48" aria-hidden="true">
-      </a>
-
-      <nav class="nav" id="nav" aria-label="Main menu">
-        <ul class="nav__list">
-          {% for item in menu %}
-          <li class="nav__item has-drop">
-            <a href="{{ item.category.get_absolute_url }}" class="nav__link">{{ item.category.label }}<svg class="i chev" aria-hidden="true"><use href="#i-chevron"/></svg></a>
-            <button class="nav__toggle" type="button" aria-label="Open {{ item.category.label }} menu" aria-expanded="false"><svg class="i"><use href="#i-chevron"/></svg></button>
-            <div class="drop">
-              <a class="drop__head" href="{{ item.category.get_absolute_url }}">All {{ item.category.name }} <span>→</span></a>
-              <ul>
-                {% for t in item.tours %}<li><a href="{% url 'tour' item.category.slug t.slug %}">{{ t.title }}</a></li>{% endfor %}
-              </ul>
-              {% if item.more %}<a class="drop__more" href="{{ item.category.get_absolute_url }}">View all trips →</a>{% endif %}
-              {% for extra in menu_extra %}{% if extra.slug != item.category.slug and forloop.parentloop.counter <= 2 %}<a class="drop__more" href="{{ extra.get_absolute_url }}">{{ extra.name }} →</a>{% endif %}{% endfor %}
-            </div>
-          </li>
-          {% endfor %}
-          <li class="nav__item"><a href="{% url 'departures' %}" class="nav__link">Group Departures</a></li>
-          <li class="nav__item has-drop">
-            <a href="{% url 'about' %}" class="nav__link">About<svg class="i chev" aria-hidden="true"><use href="#i-chevron"/></svg></a>
-            <button class="nav__toggle" type="button" aria-label="Open About menu" aria-expanded="false"><svg class="i"><use href="#i-chevron"/></svg></button>
-            <div class="drop drop--small">
-              <ul>
-                <li><a href="{% url 'about' %}">About Us</a></li>
-                {% for p in footer_pages %}{% if p.kind == 'page' %}<li><a href="{{ p.get_absolute_url }}">{{ p.title }}</a></li>{% endif %}{% endfor %}
-                <li><a href="{% url 'faq' %}">Travel FAQ</a></li>
-                <li><a href="{% url 'guides' %}">Travel Guides</a></li>
-                <li><a href="{% url 'contact' %}">Contact</a></li>
-              </ul>
-            </div>
-          </li>
-        </ul>
-        <div class="nav__mobile-cta">
-          <a href="{% url 'plan_trip' %}" class="btn btn--accent btn--block">Plan My Trip</a>
-          <a href="{{ site.whatsapp_url }}" class="btn btn--wa btn--block" target="_blank" rel="noopener"><svg class="i"><use href="#i-whatsapp"/></svg>WhatsApp us</a>
-        </div>
-      </nav>
-
-      <div class="header__actions">
-        <a href="{% url 'plan_trip' %}" class="btn btn--accent header__cta">Plan My Trip</a>
-        <button class="burger" id="burger" type="button" aria-label="Open menu" aria-controls="nav" aria-expanded="false"><span></span><span></span><span></span></button>
-      </div>
-    </div>
-  </header>
-</div>
-
+<div class="shell">
 {% if messages %}
 <div class="container messages">{% for m in messages %}<p class="msg msg--{{ m.tags }}">{{ m }}</p>{% endfor %}</div>
 {% endif %}
@@ -180,9 +180,13 @@
   </div>
 </footer>
 
-<a class="wa-float" href="{% block wa_link %}{% wa 'Hello Nomad Explorer Tours, I would like to plan a trip to Tanzania.' %}{% endblock %}" target="_blank" rel="noopener" aria-label="Chat with us on WhatsApp">
-  <svg class="i"><use href="#i-whatsapp"/></svg><span>Chat with us</span>
-</a>
+</div>
+
+<nav class="actionbar" aria-label="Quick contact">
+  <a href="tel:{{ site.phone_link }}"><svg class="i"><use href="#i-phone"/></svg>Call</a>
+  <a href="{% block wa_link %}{% wa 'Hello Nomad Explorer Tours, I would like to plan a trip to Tanzania.' %}{% endblock %}" target="_blank" rel="noopener" class="actionbar__wa"><svg class="i"><use href="#i-whatsapp"/></svg>WhatsApp</a>
+  <a href="{% url 'plan_trip' %}" class="actionbar__plan"><svg class="i"><use href="#i-compass"/></svg>Plan trip</a>
+</nav>
 
 {% include "tours/partials/icons.html" %}
 <script src="{% static 'tours/js/site.js' %}" defer></script>
