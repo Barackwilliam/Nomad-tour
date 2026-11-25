@@ -7,3 +7,5 @@ python manage.py migrate --noinput
 python manage.py ensure_admin
 # Loads the starting tours, departures and photos the first time only.
 python manage.py seed_site --if-empty
+# Swaps in the client's newer photos where the original seed photo is still used.
+python manage.py update_photos
