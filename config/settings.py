@@ -165,7 +165,7 @@ STORAGES = {
 }
 
 # Public address of the site, e.g. https://www.nomadexplorertours.com (used for SEO links).
-SITE_URL = env("SITE_URL", f"https://{RENDER_HOST}" if RENDER_HOST else "http://localhost:8000").rstrip("/")
+SITE_URL = (env("SITE_URL") or (f"https://{RENDER_HOST}" if RENDER_HOST else "http://localhost:8000")).rstrip("/")
 
 # Email notifications for new enquiries (optional). Without EMAIL_HOST nothing is sent;
 # enquiries are still saved and shown in the dashboard.
@@ -191,6 +191,7 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", True)
+    SECURE_REDIRECT_EXEMPT = [r"^robots\.txt$"]  # Render health check uses plain HTTP
     SECURE_HSTS_SECONDS = int(env("SECURE_HSTS_SECONDS", "0"))
     SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 
