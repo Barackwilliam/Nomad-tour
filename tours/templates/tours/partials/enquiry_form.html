@@ -1,0 +1,27 @@
+{# Shared enquiry form. Options: compact (bool), show_interests (bool), submit_label, extra hidden inputs via block in caller #}
+{% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+<input type="hidden" name="form" value="enquiry">
+<div class="hp" aria-hidden="true"><label>Leave this empty<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+<div class="form-grid{% if compact %} form-grid--compact{% endif %}">
+  {% for field in form %}
+    {% if field.name == 'website' %}
+    {% elif field.name == 'interests_list' %}
+      {% if show_interests %}
+      <fieldset class="field field--full">
+        <legend>{{ field.label }}</legend>
+        <div class="checks">{% for cb in field %}<label class="check">{{ cb.tag }}<span>{{ cb.choice_label }}</span></label>{% endfor %}</div>
+      </fieldset>
+      {% endif %}
+    {% elif field.name == 'budget' and not show_interests %}
+    {% elif field.name == 'country' and compact %}
+    {% else %}
+      <div class="field{% if field.name == 'message' or field.name == 'full_name' and compact %} field--full{% endif %}{% if field.errors %} field--error{% endif %}{% if field.name == 'adults' or field.name == 'children' %} field--half{% endif %}">
+        <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="req">*</span>{% endif %}</label>
+        {{ field }}
+        {% for e in field.errors %}<p class="field__error">{{ e }}</p>{% endfor %}
+      </div>
+    {% endif %}
+  {% endfor %}
+</div>
+<button type="submit" class="btn btn--accent btn--block btn--lg">{{ submit_label|default:"Send enquiry" }}</button>
+<p class="form-note"><svg class="i"><use href="#i-shield"/></svg>No payment now. We reply within 24 hours with availability and a free quote.</p>

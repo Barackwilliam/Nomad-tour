@@ -1,0 +1,40 @@
+{% extends "tours/base.html" %}
+
+{% block title %}Contact Us | {{ site.company_name }}, Moshi Tanzania{% endblock %}
+{% block description %}Contact {{ site.company_name }} in Moshi, Tanzania. Call or WhatsApp {{ site.phone }}, email {{ site.email }} or send us a message.{% endblock %}
+
+{% block content %}
+{% include "tours/partials/page_hero.html" with hero_title="Contact us" hero_text="Questions about a climb, a safari or your booking? We're happy to help." %}
+
+<section class="section">
+  <div class="container">
+    <div class="contact-cards">
+      <a class="contact-card" href="{{ site.whatsapp_url }}" target="_blank" rel="noopener"><svg class="i"><use href="#i-whatsapp"/></svg><h2>WhatsApp</h2><p>{{ site.phone }}</p></a>
+      <a class="contact-card" href="tel:{{ site.phone_link }}"><svg class="i"><use href="#i-phone"/></svg><h2>Call us</h2><p>{{ site.phone }}{% if site.phone_2 %}<br>{{ site.phone_2 }}{% endif %}</p></a>
+      <a class="contact-card" href="mailto:{{ site.email }}"><svg class="i"><use href="#i-mail"/></svg><h2>Email</h2><p>{{ site.email }}</p></a>
+      <div class="contact-card"><svg class="i"><use href="#i-pin"/></svg><h2>Office</h2><p>{{ site.address }}</p></div>
+    </div>
+
+    <div class="form-layout">
+      <div class="form-card">
+        <h2>Send us a message</h2>
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% include "tours/partials/enquiry_form.html" with submit_label="Send message" %}
+        </form>
+      </div>
+      <aside class="form-aside">
+        {% if site.map_embed_url %}
+        <iframe class="map" src="{{ site.map_embed_url }}" title="Map to our office" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        {% else %}
+        <iframe class="map" src="https://maps.google.com/maps?q=Soweto%2C%20Moshi%2C%20Tanzania&z=14&output=embed" title="Map of Moshi, Tanzania" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        {% endif %}
+        <h2>Office hours</h2>
+        <p>Monday – Saturday, 8:00 – 18:00 (East Africa Time, GMT+3).<br>On WhatsApp we answer every day.</p>
+        {% if site.payment_link %}<a href="{{ site.payment_link }}" class="btn btn--outline" target="_blank" rel="noopener"><svg class="i"><use href="#i-card"/></svg>Pay securely online</a>{% endif %}
+      </aside>
+    </div>
+  </div>
+</section>
+{% endblock %}
+{% block footer_cta %}{% endblock %}

@@ -1,0 +1,223 @@
+{% extends "tours/base.html" %}
+{% load static tour_tags %}
+
+{% block head %}<link rel="preload" as="image" href="{% img site.hero_image 'tours/img/hero.webp' %}" fetchpriority="high">{% endblock %}
+
+{% block jsonld %}
+{{ ld_org|json_ld }}
+{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <img class="hero__bg" src="{% img site.hero_image 'tours/img/hero.webp' %}" alt="Wildebeest herds and a safari vehicle in the Serengeti" fetchpriority="high" width="1920" height="1080">
+  <div class="container hero__inner">
+    <div class="hero__copy">
+      <p class="eyebrow eyebrow--light">Maasai-owned · Moshi &amp; Arusha, Tanzania</p>
+      <h1>{{ site.hero_title }}</h1>
+      <p class="hero__lead">{{ site.hero_subtitle }}</p>
+      <ul class="hero__stats">
+        <li><strong>{{ site.years_experience }}+</strong><span>years guiding in Tanzania</span></li>
+        <li><strong>{{ site.stat_travellers }}</strong><span>happy travellers</span></li>
+        <li><strong>{{ site.stat_rating }}<svg class="i"><use href="#i-star"/></svg></strong><span>TripAdvisor rating</span></li>
+      </ul>
+    </div>
+
+    <form class="planner" action="{% url 'plan_trip' %}" method="get">
+      <h2 class="planner__title">Where do we start?</h2>
+      <div class="planner__tabs" role="radiogroup" aria-label="Type of trip">
+        <label><input type="radio" name="trip" value="Wildlife safari" checked><span>Safari</span></label>
+        <label><input type="radio" name="trip" value="Kilimanjaro climb"><span>Kilimanjaro</span></label>
+        <label><input type="radio" name="trip" value="Zanzibar beach"><span>Zanzibar</span></label>
+      </div>
+      <label class="planner__label" for="planner-month">When would you like to travel?</label>
+      <select id="planner-month" name="month">
+        {% for m in months %}<option value="{{ m|date:'F Y' }}">{{ m|date:"F, Y" }}</option>{% endfor %}
+      </select>
+      <button type="submit" class="btn btn--accent btn--block btn--lg">Design my trip</button>
+      <p class="planner__note">Free itinerary and quote. No commitment.</p>
+    </form>
+  </div>
+</section>
+
+<section class="section intro">
+  <div class="container">
+    <div class="section__head section__head--center">
+      <p class="eyebrow">Welcome to {{ site.company_name }}</p>
+      <h2>{{ site.intro_title }}</h2>
+      {% for p in site.intro_paragraphs %}<p class="lead">{{ p }}</p>{% endfor %}
+    </div>
+    <div class="big-cards">
+      {% for c in categories|slice:":3" %}
+      <a class="big-card" href="{{ c.get_absolute_url }}">
+        <img src="{% img c.image %}" alt="{{ c.name }}" loading="lazy" width="800" height="600">
+        <div class="big-card__text">
+          <h3>{{ c.name }}</h3>
+          <p>{{ c.tagline }}</p>
+          <span class="big-card__cta">{% if c.min_price %}From {{ c.min_price|money }} · {% endif %}View trips <svg class="i"><use href="#i-arrow"/></svg></span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section section--sand why">
+  <div class="container why__grid">
+    <div class="why__intro">
+      <p class="eyebrow">Why travel with us</p>
+      <h2>Local experts who run every trip themselves</h2>
+      <p>We are not a booking agent. Our own guides, cooks, porters and vehicles look after you from the moment you land until we wave you goodbye.</p>
+      <div class="btn-row">
+        <a href="{{ site.whatsapp_url }}" class="btn btn--wa" target="_blank" rel="noopener"><svg class="i"><use href="#i-whatsapp"/></svg>Chat online</a>
+        <a href="{% url 'plan_trip' %}" class="btn btn--outline">Send an enquiry</a>
+      </div>
+    </div>
+    <ul class="features">
+      <li><svg class="i"><use href="#i-compass"/></svg><h3>Maasai-owned &amp; local</h3><p>Based in Moshi and Arusha, at the foot of Kilimanjaro.</p></li>
+      <li><svg class="i"><use href="#i-flag"/></svg><h3>{{ site.years_experience }}+ years of experience</h3><p>Guiding safaris and climbs since {{ site.founded_year }}.</p></li>
+      <li><svg class="i"><use href="#i-shield"/></svg><h3>Our own operations</h3><p>We never outsource your trip. One team, start to finish.</p></li>
+      <li><svg class="i"><use href="#i-heart"/></svg><h3>Tailor-made &amp; private</h3><p>Every itinerary adjusted to your dates, pace and budget.</p></li>
+      <li><svg class="i"><use href="#i-leaf"/></svg><h3>Responsible tourism</h3><p>Fair pay for porters and support for local communities.</p></li>
+      <li><svg class="i"><use href="#i-card"/></svg><h3>Fair, clear prices</h3><p>Transparent quotes with no hidden costs. Pay safely online.</p></li>
+    </ul>
+  </div>
+</section>
+
+<section class="section popular">
+  <div class="container">
+    <div class="section__head section__head--split">
+      <div>
+        <p class="eyebrow">Hand-picked trips</p>
+        <h2>Our popular adventures</h2>
+      </div>
+      <div class="tabs" role="tablist" aria-label="Filter trips">
+        <button type="button" class="tab is-active" data-filter="all" role="tab" aria-selected="true">All</button>
+        {% for c in featured_categories %}<button type="button" class="tab" data-filter="{{ c.slug }}" role="tab" aria-selected="false">{{ c.label }}</button>{% endfor %}
+      </div>
+    </div>
+    <div class="grid grid--cards" data-filter-grid>
+      {% for t in featured %}{% include "tours/partials/tour_card.html" %}{% endfor %}
+    </div>
+    <div class="center"><a href="{% url 'tour_list' %}" class="btn btn--outline">View all tours</a></div>
+  </div>
+</section>
+
+{% if departures %}
+<section class="section section--dark departures-teaser">
+  <div class="container">
+    <div class="section__head section__head--split">
+      <div>
+        <p class="eyebrow eyebrow--light">Travel solo, share the cost</p>
+        <h2>Group departures {{ site.departures_year }}</h2>
+        <p>Join a scheduled Kilimanjaro climb or safari with other travellers. Fixed dates, clear prices, only a 30% deposit to book your place.</p>
+      </div>
+      <a href="{% url 'departures' %}" class="btn btn--accent">See all {{ site.departures_year }} dates</a>
+    </div>
+    <ul class="dep-mini">
+      {% for d in departures %}
+      <li>
+        <a href="{% url 'departures' %}?type={{ d.kind }}#dep-{{ d.pk }}">
+          <span class="dep-mini__date"><strong>{{ d.start_date|date:"d" }}</strong>{{ d.start_date|date:"M Y" }}</span>
+          <span class="dep-mini__name">{{ d.name }}<small>{{ d.days }} days · {{ d.get_kind_display }}</small></span>
+          <span class="dep-mini__price">{{ d.price|money }}<small>{% with st=d.display_status %}{{ st.1 }}{% endwith %}</small></span>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+{% endif %}
+
+<section class="section call">
+  <div class="container call__inner">
+    <div class="call__img"><img src="{% img site.about_image %}" alt="The Nomad Explorer Tours team with a safari vehicle" loading="lazy" width="640" height="480"></div>
+    <div class="call__text">
+      <p class="eyebrow">Talk to a local expert</p>
+      <h2>Free call with our Kilimanjaro &amp; safari team</h2>
+      <p>Get honest advice about routes, parks, lodges and the best season to travel, straight from our team in Moshi. We'll help you choose the right trip for your time and budget.</p>
+      <div class="btn-row">
+        <a href="{% wa 'Hello Nomad Explorer Tours, I would like to book a free call about my trip.' %}" class="btn btn--wa" target="_blank" rel="noopener"><svg class="i"><use href="#i-whatsapp"/></svg>Book a free call</a>
+        <a href="tel:{{ site.phone_link }}" class="btn btn--outline"><svg class="i"><use href="#i-phone"/></svg>{{ site.phone }}</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--sand reviews">
+  <div class="container">
+    <div class="section__head section__head--center">
+      <p class="eyebrow">Reviews</p>
+      <h2>What our travellers say</h2>
+    </div>
+    {% if testimonials %}
+    <div class="grid grid--3">
+      {% for r in testimonials %}
+      <figure class="review">
+        <div class="review__stars" aria-label="{{ r.rating }} out of 5 stars">{% for s in r.stars %}<svg class="i"><use href="#i-star"/></svg>{% endfor %}</div>
+        <blockquote>“{{ r.text }}”</blockquote>
+        <figcaption><strong>{{ r.name }}</strong>{% if r.country %}, {{ r.country }}{% endif %}{% if r.trip %}<span>{{ r.trip }}</span>{% endif %}</figcaption>
+      </figure>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% if site.tripadvisor %}
+    <div class="ta-box">
+      <svg class="i"><use href="#i-tripadvisor"/></svg>
+      <p>Read honest reviews from our climbers and safari guests on TripAdvisor.</p>
+      <a href="{{ site.tripadvisor }}" class="btn btn--outline" target="_blank" rel="noopener">Read our reviews</a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section explore">
+  <div class="container">
+    <div class="section__head section__head--center">
+      <p class="eyebrow">Explore Tanzania</p>
+      <h2>Find your kind of adventure</h2>
+    </div>
+    <div class="cat-grid">
+      {% for c in categories %}
+      <a class="cat-tile" href="{{ c.get_absolute_url }}">
+        <img src="{% img c.image %}" alt="{{ c.name }}" loading="lazy" width="600" height="400">
+        <span class="cat-tile__name">{{ c.name }}</span>
+        {% if c.min_price %}<span class="cat-tile__price">from {{ c.min_price|money }}</span>{% endif %}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% if faqs %}
+<section class="section section--sand">
+  <div class="container faq-wrap">
+    <div>
+      <p class="eyebrow">Good to know</p>
+      <h2>Frequently asked questions</h2>
+      <p>Can't find your answer? Our team replies quickly on WhatsApp.</p>
+      <div class="btn-row">
+        <a href="{{ site.whatsapp_url }}" class="btn btn--wa" target="_blank" rel="noopener"><svg class="i"><use href="#i-whatsapp"/></svg>Ask on WhatsApp</a>
+        <a href="{% url 'faq' %}" class="btn btn--outline">All FAQs</a>
+      </div>
+    </div>
+    {% include "tours/partials/faq_list.html" with open_first=True %}
+  </div>
+</section>
+{% endif %}
+
+{% if guides %}
+<section class="section">
+  <div class="container">
+    <div class="section__head section__head--split">
+      <div><p class="eyebrow">Travel guides</p><h2>Stories &amp; tips</h2></div>
+      <a href="{% url 'guides' %}" class="btn btn--outline">Read articles</a>
+    </div>
+    <div class="grid grid--3">
+      {% for g in guides %}
+      <a class="post" href="{{ g.get_absolute_url }}"><img src="{% img g.image %}" alt="" loading="lazy" width="600" height="400"><h3>{{ g.title }}</h3><p>{{ g.intro }}</p></a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

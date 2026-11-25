@@ -1,0 +1,36 @@
+{% extends "tours/base.html" %}
+{% load tour_tags %}
+
+{% block title %}Plan My Trip – Free Tanzania Itinerary & Quote | {{ site.company_name }}{% endblock %}
+{% block description %}Tell us about your dream Tanzania trip and get a free personalised itinerary and quote within 24 hours. Safaris, Kilimanjaro, Zanzibar and more.{% endblock %}
+
+{% block content %}
+{% include "tours/partials/page_hero.html" with hero_title="Plan your trip" hero_text="Tell us what you dream of. We reply within 24 hours with a free itinerary and quote." c2="Plan my trip" %}
+
+<section class="section">
+  <div class="container form-layout">
+    <div class="form-card">
+      {% if tour %}<p class="selected-tour">You're asking about <a href="{{ tour.get_absolute_url }}">{{ tour.title }}</a></p>{% endif %}
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% include "tours/partials/enquiry_form.html" with show_interests=True submit_label="Send my trip request" %}
+      </form>
+    </div>
+    <aside class="form-aside">
+      <h2>What happens next?</h2>
+      <ol class="next-steps">
+        <li><strong>We read your request</strong> and may ask a question or two on email or WhatsApp.</li>
+        <li><strong>You get a free itinerary</strong> with a clear price, usually within 24 hours.</li>
+        <li><strong>We adjust it</strong> until it is exactly what you want.</li>
+        <li><strong>Book with a deposit</strong> by bank transfer or secure online payment.</li>
+      </ol>
+      <div class="contact-mini">
+        <p>Prefer to talk?</p>
+        <a href="{{ site.whatsapp_url }}" class="btn btn--wa btn--block" target="_blank" rel="noopener"><svg class="i"><use href="#i-whatsapp"/></svg>WhatsApp {{ site.phone }}</a>
+        <a href="mailto:{{ site.email }}" class="contact-mini__link"><svg class="i"><use href="#i-mail"/></svg>{{ site.email }}</a>
+      </div>
+    </aside>
+  </div>
+</section>
+{% endblock %}
+{% block footer_cta %}{% endblock %}

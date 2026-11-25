@@ -1,0 +1,182 @@
+{% extends "tours/base.html" %}
+{% load tour_tags %}
+
+{% block title %}{{ tour.seo_title }} | {{ site.company_name }}{% endblock %}
+{% block description %}{{ tour.seo_description }}{% endblock %}
+{% block og_title %}{{ tour.title }}{% endblock %}
+{% block og_description %}{{ tour.seo_description }}{% endblock %}
+{% block og_image %}{% img tour.image as im %}{% if 'http' in im %}{{ im }}{% else %}{{ SITE_URL }}{{ im }}{% endif %}{% endblock %}
+{% block jsonld %}{{ ld_tour|json_ld }}{{ ld_crumbs|json_ld }}{% endblock %}
+{% block wa_link %}{% wa wa_text %}{% endblock %}
+{% block body_class %}has-bookbar{% endblock %}
+
+{% block content %}
+<section class="tour-hero">
+  <img class="tour-hero__bg" src="{% img tour.image %}" alt="{{ tour.title }}" fetchpriority="high" width="1600" height="750">
+  <div class="container tour-hero__inner">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="{% url 'home' %}">Home</a><span>/</span><a href="{{ tour.category.get_absolute_url }}">{{ tour.category.name }}</a><span>/</span><span aria-current="page">{{ tour.title }}</span>
+    </nav>
+    <h1>{{ tour.title }}</h1>
+    <ul class="chips">
+      <li><svg class="i"><use href="#i-clock"/></svg>{{ tour.duration_text }}</li>
+      <li><svg class="i"><use href="#i-users"/></svg>{{ tour.get_style_display }}</li>
+      {% if tour.level %}<li><svg class="i"><use href="#i-leaf"/></svg>{{ tour.get_level_display }}</li>{% endif %}
+      <li><svg class="i"><use href="#i-calendar"/></svg>{% if tour.is_group %}Fixed dates{% else %}Any date{% endif %}</li>
+    </ul>
+    <div class="tour-hero__bottom">
+      <p class="tour-hero__price">{% if tour.price_from %}From <strong>{{ tour.price_from|money }}</strong> {{ tour.price_note }}{% if tour.price_old %} <s>{{ tour.price_old|money }}</s>{% endif %}{% else %}<strong>Price on request</strong>{% endif %}</p>
+      <div class="btn-row">
+        <a href="#book" class="btn btn--accent btn--lg">Book this tour</a>
+        <a href="{% wa wa_text %}" class="btn btn--wa btn--lg" target="_blank" rel="noopener"><svg class="i"><use href="#i-whatsapp"/></svg>WhatsApp</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<nav class="subnav" aria-label="On this page">
+  <div class="container subnav__inner">
+    <a href="#overview">Overview</a>
+    {% if tour.days.all %}<a href="#itinerary">Itinerary</a>{% endif %}
+    <a href="#included">Included</a>
+    {% if tour.prices.all %}<a href="#prices">Prices</a>{% endif %}
+    {% if departures %}<a href="#dates">Dates</a>{% endif %}
+    <a href="#book" class="subnav__book">Book now</a>
+  </div>
+</nav>
+
+<div class="container tour-layout">
+  <div class="tour-main">
+    <section id="overview" class="block">
+      <dl class="facts">
+        <div><dt>Duration</dt><dd>{{ tour.duration_text }}</dd></div>
+        <div><dt>Tour type</dt><dd>{{ tour.tour_type|default:tour.get_style_display }}</dd></div>
+        <div><dt>Group size</dt><dd>{{ tour.group_size|default:"Any" }}</dd></div>
+        <div><dt>Availability</dt><dd>{% if tour.is_group %}Scheduled departures{% else %}Any date{% endif %}</dd></div>
+        {% if tour.start_point %}<div><dt>Starts</dt><dd>{{ tour.start_point }}</dd></div>{% endif %}
+        {% if tour.end_point %}<div><dt>Ends</dt><dd>{{ tour.end_point }}</dd></div>{% endif %}
+      </dl>
+
+      <h2>Tour overview</h2>
+      {% for p in tour.overview_paragraphs %}<p>{{ p }}</p>{% endfor %}
+      {% if tour.destinations %}<p class="destinations"><svg class="i"><use href="#i-pin"/></svg><strong>Destinations:</strong> {{ tour.destinations }}</p>{% endif %}
+
+      {% if tour.highlight_list %}
+      <h3>Highlights</h3>
+      <ul class="ticks">{% for h in tour.highlight_list %}<li><svg class="i"><use href="#i-check"/></svg>{{ h }}</li>{% endfor %}</ul>
+      {% endif %}
+
+      {% with gallery=tour.gallery.all %}{% if gallery %}
+      <div class="gallery" data-gallery>
+        {% for g in gallery %}<a href="{{ g.image.url }}" class="gallery__item"><img src="{{ g.image.url }}" alt="{{ g.caption|default:tour.title }}" loading="lazy" width="400" height="280"></a>{% endfor %}
+      </div>
+      {% endif %}{% endwith %}
+
+      <div class="note-box">
+        <p><strong>Like this itinerary?</strong> Every private trip can be changed: add days, upgrade lodges or combine with Zanzibar. Tell us what you have in mind.</p>
+      </div>
+    </section>
+
+    {% with days=tour.days.all %}{% if days %}
+    <section id="itinerary" class="block">
+      <div class="block__head">
+        <h2>Day-by-day itinerary</h2>
+        <button type="button" class="link-btn" data-expand-all>Expand all</button>
+      </div>
+      <ol class="itinerary">
+        {% for d in days %}
+        <li>
+          <details class="day"{% if forloop.first %} open{% endif %}>
+            <summary>
+              <span class="day__num">{% if d.day_number == 0 %}Arrival{% else %}Day {{ d.day_number }}{% endif %}</span>
+              <span class="day__title">{{ d.title }}</span>
+              <svg class="i"><use href="#i-chevron"/></svg>
+            </summary>
+            <div class="day__body">
+              {% for p in d.paragraphs %}<p>{{ p }}</p>{% endfor %}
+              {% if d.facts %}<dl class="day__facts">{% for k, v in d.facts %}<div><dt>{{ k }}</dt><dd>{{ v }}</dd></div>{% endfor %}</dl>{% endif %}
+              {% if d.image %}<img class="day__img" src="{{ d.image.url }}" alt="{{ d.title }}" loading="lazy">{% endif %}
+            </div>
+          </details>
+        </li>
+        {% endfor %}
+      </ol>
+    </section>
+    {% endif %}{% endwith %}
+
+    <section id="included" class="block">
+      <h2>What's included</h2>
+      <div class="incl">
+        <div>
+          <h3 class="incl__yes">Included</h3>
+          <ul class="ticks">{% for x in tour.included_list %}<li><svg class="i"><use href="#i-check"/></svg>{{ x }}</li>{% empty %}<li>Ask us for the full list.</li>{% endfor %}</ul>
+        </div>
+        <div>
+          <h3 class="incl__no">Not included</h3>
+          <ul class="crosses">{% for x in tour.excluded_list %}<li><svg class="i"><use href="#i-close"/></svg>{{ x }}</li>{% empty %}<li>International flights, visa, insurance and tips.</li>{% endfor %}</ul>
+        </div>
+      </div>
+    </section>
+
+    {% with prices=tour.prices.all %}{% if prices %}
+    <section id="prices" class="block">
+      <h2>Prices</h2>
+      <p class="muted">Price per person in US dollars. The more people travel together, the lower the price.</p>
+      <table class="price-table">
+        <thead><tr><th scope="col">Group size</th><th scope="col">Price per person</th></tr></thead>
+        <tbody>{% for p in prices %}<tr><td>{{ p.label }}</td><td><strong>{{ p.price|money }}</strong></td></tr>{% endfor %}</tbody>
+      </table>
+    </section>
+    {% endif %}{% endwith %}
+
+    {% if departures %}
+    <section id="dates" class="block">
+      <h2>Group departure dates</h2>
+      <ul class="dep-mini dep-mini--light">
+        {% for d in departures %}
+        <li><a href="{% url 'departures' %}#dep-{{ d.pk }}">
+          <span class="dep-mini__date"><strong>{{ d.start_date|date:"d" }}</strong>{{ d.start_date|date:"M Y" }}</span>
+          <span class="dep-mini__name">{{ d.name }}<small>{% with st=d.display_status %}{{ st.1 }}{% endwith %}{% if d.note %} · {{ d.note }}{% endif %}</small></span>
+          <span class="dep-mini__price">{{ d.price|money }}<small>Join group →</small></span>
+        </a></li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+  </div>
+
+  <aside class="tour-side" id="book">
+    <div class="book-box">
+      <div class="book-box__price">
+        {% if tour.price_from %}<span>From</span><strong>{{ tour.price_from|money }}</strong><span>{{ tour.price_note }}</span>{% else %}<strong>Price on request</strong>{% endif %}
+      </div>
+      <h2 class="book-box__title">Book this tour</h2>
+      <form method="post" action="#book" novalidate>
+        {% csrf_token %}
+        {% include "tours/partials/enquiry_form.html" with compact=True submit_label="Check availability" %}
+      </form>
+      <div class="book-box__alt">
+        <a href="{% wa wa_text %}" class="btn btn--wa btn--block" target="_blank" rel="noopener"><svg class="i"><use href="#i-whatsapp"/></svg>WhatsApp us</a>
+        <a href="tel:{{ site.phone_link }}" class="book-box__phone"><svg class="i"><use href="#i-phone"/></svg>{{ site.phone }}</a>
+      </div>
+    </div>
+  </aside>
+</div>
+
+{% if related %}
+<section class="section section--sand">
+  <div class="container">
+    <div class="section__head section__head--split">
+      <h2>You may also like</h2>
+      <a href="{{ tour.category.get_absolute_url }}" class="btn btn--outline">All {{ tour.category.name }}</a>
+    </div>
+    <div class="grid grid--cards">{% for t in related %}{% include "tours/partials/tour_card.html" %}{% endfor %}</div>
+  </div>
+</section>
+{% endif %}
+
+<div class="bookbar">
+  <p>{% if tour.price_from %}<small>From</small> <strong>{{ tour.price_from|money }}</strong>{% else %}<strong>Price on request</strong>{% endif %}</p>
+  <a href="#book" class="btn btn--accent">Book now</a>
+</div>
+{% endblock %}

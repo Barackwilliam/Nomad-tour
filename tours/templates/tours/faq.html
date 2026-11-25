@@ -1,0 +1,22 @@
+{% extends "tours/base.html" %}
+{% load tour_tags %}
+
+{% block title %}Tanzania Travel FAQ – Kilimanjaro, Safari & Zanzibar | {{ site.company_name }}{% endblock %}
+{% block description %}Answers to common questions about climbing Kilimanjaro, Tanzania safaris, Zanzibar, visas, safety, booking and payment.{% endblock %}
+{% block jsonld %}{{ ld_faq|json_ld }}{% endblock %}
+
+{% block content %}
+{% include "tours/partials/page_hero.html" with hero_title="Frequently asked questions" hero_text="Everything you need to know before your Tanzania adventure." c2="FAQ" %}
+
+<section class="section">
+  <div class="container narrow">
+    <nav class="pills" aria-label="FAQ topics">
+      {% for key, label, items in groups %}<a class="pill" href="#faq-{{ key }}">{{ label }}</a>{% endfor %}
+    </nav>
+    {% for key, label, items in groups %}
+    <h2 id="faq-{{ key }}" class="faq-group-title">{{ label }}</h2>
+    {% include "tours/partials/faq_list.html" with faqs=items %}
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

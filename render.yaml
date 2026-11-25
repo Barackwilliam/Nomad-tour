@@ -1,0 +1,40 @@
+# Render Blueprint: Render > New > Blueprint > chagua repo hii.
+# Thamani zenye "sync: false" utaombwa kuziandika wakati wa kuanzisha.
+services:
+  - type: web
+    name: nomad-explorer-tours
+    runtime: python
+    plan: free
+    region: frankfurt
+    buildCommand: ./build.sh
+    startCommand: gunicorn config.wsgi --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    healthCheckPath: /robots.txt
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "0"
+      - key: PYTHON_VERSION
+        value: "3.13.1"
+      - key: ALLOWED_HOSTS
+        sync: false
+      - key: CSRF_TRUSTED_ORIGINS
+        sync: false
+      - key: SITE_URL
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_BUCKET
+        value: nomad
+      - key: SUPABASE_S3_ACCESS_KEY_ID
+        sync: false
+      - key: SUPABASE_S3_SECRET_ACCESS_KEY
+        sync: false
+      - key: SUPABASE_S3_REGION
+        sync: false
+      - key: DJANGO_SUPERUSER_USERNAME
+        sync: false
+      - key: DJANGO_SUPERUSER_PASSWORD
+        sync: false

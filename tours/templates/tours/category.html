@@ -1,0 +1,49 @@
+{% extends "tours/base.html" %}
+{% load tour_tags %}
+
+{% block title %}{{ category.meta_title|default:category.name }} | {{ site.company_name }}{% endblock %}
+{% block description %}{{ category.meta_description|default:category.tagline }}{% endblock %}
+{% block og_title %}{{ category.meta_title|default:category.name }}{% endblock %}
+{% block og_description %}{{ category.meta_description|default:category.tagline }}{% endblock %}
+{% block jsonld %}{{ ld_list|json_ld }}{{ ld_crumbs|json_ld }}{% if faqs %}{{ ld_faq|json_ld }}{% endif %}{% endblock %}
+
+{% block content %}
+{% include "tours/partials/page_hero.html" with hero_title=category.name hero_text=category.tagline hero_image=category.image %}
+
+<section class="section section--tight">
+  <div class="container narrow">
+    {% for p in category.intro_paragraphs %}<p class="lead">{{ p }}</p>{% endfor %}
+  </div>
+</section>
+
+<section class="section section--flush">
+  <div class="container">
+    {% include "tours/partials/filters.html" %}
+    <p class="result-count">{{ tours|length }} trip{{ tours|length|pluralize }}</p>
+    <div class="grid grid--cards">
+      {% for t in tours %}{% include "tours/partials/tour_card.html" %}{% empty %}
+      <p class="empty">No trips match these filters. <a href="{{ request.path }}">Show all {{ category.name }}</a> or <a href="{% url 'plan_trip' %}">ask us for a custom trip</a>.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container custom-trip">
+    <div>
+      <h2>Can't find the perfect trip?</h2>
+      <p>Every itinerary can be tailored. Tell us your dates, group size and budget and we'll design a trip just for you.</p>
+    </div>
+    <a href="{% url 'plan_trip' %}" class="btn btn--accent btn--lg">Design my trip</a>
+  </div>
+</section>
+
+{% if faqs %}
+<section class="section section--sand">
+  <div class="container narrow">
+    <h2 class="center">{{ category.name }}: frequently asked questions</h2>
+    {% include "tours/partials/faq_list.html" %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

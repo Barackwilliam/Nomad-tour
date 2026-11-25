@@ -1,0 +1,8 @@
+<div class="faq">
+  {% for f in faqs %}
+  <details class="faq__item"{% if forloop.first and open_first %} open{% endif %}>
+    <summary>{{ f.question }}<svg class="i"><use href="#i-chevron"/></svg></summary>
+    <div class="faq__answer">{% for p in f.answer_paragraphs %}<p>{{ p }}</p>{% endfor %}</div>
+  </details>
+  {% endfor %}
+</div>

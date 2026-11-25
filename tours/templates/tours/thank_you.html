@@ -1,0 +1,19 @@
+{% extends "tours/base.html" %}
+
+{% block title %}Thank you | {{ site.company_name }}{% endblock %}
+{% block head %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block content %}
+<section class="section thanks">
+  <div class="container narrow center">
+    <div class="thanks__icon"><svg class="i"><use href="#i-check"/></svg></div>
+    <h1>Asante sana{% if info.name %}, {{ info.name }}{% endif %}!</h1>
+    <p class="lead">We have received your enquiry{% if info.subject %} about <strong>{{ info.subject }}</strong>{% endif %}. Our team will reply within 24 hours, usually much sooner.</p>
+    <p>Want a faster answer? Send us a quick message on WhatsApp.</p>
+    <div class="btn-row btn-row--center">
+      <a href="{{ wa_url }}" class="btn btn--wa btn--lg" target="_blank" rel="noopener"><svg class="i"><use href="#i-whatsapp"/></svg>Continue on WhatsApp</a>
+      <a href="{% url 'tour_list' %}" class="btn btn--outline btn--lg">Browse more trips</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

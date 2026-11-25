@@ -1,0 +1,97 @@
+{% extends "tours/base.html" %}
+{% load tour_tags %}
+
+{% block title %}Group Joining Safaris & Kilimanjaro Climbs {{ year }} | {{ site.company_name }}{% endblock %}
+{% block description %}Scheduled {{ year }} group departures for Kilimanjaro climbs and Tanzania safaris. Share the cost with other travellers, book with a 30% deposit.{% endblock %}
+{% block jsonld %}{{ ld_events|json_ld }}{% endblock %}
+
+{% block content %}
+{% include "tours/partials/page_hero.html" with hero_title="Group Joining Safaris & Kilimanjaro Climbs" hero_text="Scheduled departures for "|add:year_str|add:". Travel with others, pay less, keep private-tour quality." c2="Group departures" %}
+
+<section class="section section--tight">
+  <div class="container">
+    <div class="steps">
+      <div class="step"><span>1</span><h3>Choose a date</h3><p>Pick a Kilimanjaro climb or safari departure in {{ year }} that fits your plans.</p></div>
+      <div class="step"><span>2</span><h3>Reserve your place</h3><p>Send the form or WhatsApp us. A {{ deposit_percent }}% deposit secures your seat.</p></div>
+      <div class="step"><span>3</span><h3>Meet your group</h3><p>Small groups (max 6 per safari vehicle), pick-up from Moshi or Arusha.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--flush" id="list">
+  <div class="container">
+    <form class="dep-filters" method="get" action="#list" data-autosubmit>
+      <div class="tabs" role="radiogroup" aria-label="Type of departure">
+        <label class="tab{% if not kind %} is-active{% endif %}"><input type="radio" name="type" value=""{% if not kind %} checked{% endif %}>All</label>
+        <label class="tab{% if kind == 'kilimanjaro' %} is-active{% endif %}"><input type="radio" name="type" value="kilimanjaro"{% if kind == 'kilimanjaro' %} checked{% endif %}>Kilimanjaro climbs</label>
+        <label class="tab{% if kind == 'safari' %} is-active{% endif %}"><input type="radio" name="type" value="safari"{% if kind == 'safari' %} checked{% endif %}>Safaris</label>
+      </div>
+      <div class="filters__group">
+        <label for="d-month">Month</label>
+        <select name="month" id="d-month">
+          <option value="">All of {{ year }}</option>
+          {% for m, d in months %}<option value="{{ m }}"{% if month == m %} selected{% endif %}>{{ d|date:"F Y" }}</option>{% endfor %}
+        </select>
+      </div>
+      <noscript><button class="btn btn--accent" type="submit">Show</button></noscript>
+    </form>
+
+    <p class="result-count">{{ departures|length }} departure{{ departures|length|pluralize }}</p>
+
+    <div class="dep-table" role="table" aria-label="Group departures {{ year }}">
+      <div class="dep-row dep-row--head" role="row">
+        <span role="columnheader">Date</span><span role="columnheader">Trip</span><span role="columnheader">Price</span><span role="columnheader">Availability</span><span role="columnheader"><span class="sr-only">Book</span></span>
+      </div>
+      {% for d in departures %}
+      {% with st=d.display_status %}
+      <div class="dep-row{% if d.is_full %} is-full{% endif %}" role="row" id="dep-{{ d.pk }}">
+        <span class="dep-row__date" role="cell">
+          <strong>{{ d.start_date|date:"d M" }}</strong>
+          <small>{% if d.end_date %}to {{ d.end_date|date:"d M Y" }}{% else %}{{ d.start_date|date:"Y" }}{% endif %}</small>
+        </span>
+        <span class="dep-row__trip" role="cell">
+          <span class="dep-kind dep-kind--{{ d.kind }}">{{ d.get_kind_display }}</span>
+          {% if d.tour %}<a href="{{ d.tour.get_absolute_url }}">{{ d.name }}</a>{% else %}<strong>{{ d.name }}</strong>{% endif %}
+          <small>{% if d.days %}{{ d.days }} days · {% endif %}Starts from {{ d.tour.start_point|default:"Moshi / Arusha" }}{% if d.note %} · <em>{{ d.note }}</em>{% endif %}</small>
+        </span>
+        <span class="dep-row__price" role="cell"><strong>{{ d.price|money }}</strong><small>pp · deposit {{ d.deposit|money }}</small></span>
+        <span class="dep-row__status" role="cell"><span class="badge badge--{{ st.0 }}">{{ st.1 }}</span></span>
+        <span class="dep-row__cta" role="cell">
+          {% if d.is_full %}
+            {% with txt="Hello, I would like to join the waiting list for "|add:d.name %}<a class="btn btn--outline btn--sm" href="{% wa txt %}" target="_blank" rel="noopener">Waiting list</a>{% endwith %}
+          {% else %}
+            <button type="button" class="btn btn--accent btn--sm" data-join="{{ d.pk }}" data-name="{{ d.name }}" data-date="{{ d.start_date|date:'d F Y' }}" data-iso="{{ d.start_date|date:'Y-m-d' }}" data-price="{{ d.price|money }}">Join group</button>
+          {% endif %}
+        </span>
+      </div>
+      {% endwith %}
+      {% empty %}
+      <p class="empty">No departures for this selection. <a href="{% url 'departures' %}">Show all {{ year }} dates</a> or <a href="{% url 'plan_trip' %}">ask for a private date</a>.</p>
+      {% endfor %}
+    </div>
+    <p class="muted small">Every scheduled route can also be booked as a private departure on the date of your choice. Prices are per person in US dollars.</p>
+  </div>
+</section>
+
+{% if group_tours %}
+<section class="section section--sand">
+  <div class="container">
+    <div class="section__head"><h2>Group joining itineraries</h2><p>See the full day-by-day programme for our shared safaris.</p></div>
+    <div class="grid grid--cards">{% for t in group_tours %}{% include "tours/partials/tour_card.html" %}{% endfor %}</div>
+  </div>
+</section>
+{% endif %}
+
+<dialog class="modal" id="join-modal" aria-labelledby="join-title" {% if open_departure %}data-open="{{ open_departure.pk }}"{% endif %}>
+  <form method="post" action="{% url 'departures' %}#list" class="modal__box" novalidate>
+    {% csrf_token %}
+    <button type="button" class="modal__close" data-close aria-label="Close"><svg class="i"><use href="#i-close"/></svg></button>
+    <p class="eyebrow">Join a group departure</p>
+    <h2 id="join-title" data-join-title>{% if open_departure %}{{ open_departure.name }}{% endif %}</h2>
+    <p class="modal__meta" data-join-meta>{% if open_departure %}{{ open_departure.start_date|date:"d F Y" }} · {{ open_departure.price|money }} per person{% endif %}</p>
+    <input type="hidden" name="departure_id" value="{{ open_departure.pk|default:'' }}" data-join-id>
+    {% include "tours/partials/enquiry_form.html" with compact=True submit_label="Reserve my place" %}
+    <a class="btn btn--wa btn--block" data-join-wa href="{{ site.whatsapp_url }}" target="_blank" rel="noopener"><svg class="i"><use href="#i-whatsapp"/></svg>Or join on WhatsApp</a>
+  </form>
+</dialog>
+{% endblock %}

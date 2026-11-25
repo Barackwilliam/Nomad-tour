@@ -1,0 +1,13 @@
+{% load tour_tags %}{# include with hero_title, hero_text, hero_image, c1/u1 (optional parent crumb), c2 (current crumb) #}
+<section class="page-hero">
+  <img class="page-hero__bg" src="{% if hero_image %}{% img hero_image %}{% else %}{% img site.hero_image 'tours/img/hero.webp' %}{% endif %}" alt="" fetchpriority="high" width="1600" height="600">
+  <div class="container page-hero__inner">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="{% url 'home' %}">Home</a>
+      {% if c1 %}<span>/</span><a href="{{ u1 }}">{{ c1 }}</a>{% endif %}
+      <span>/</span><span aria-current="page">{{ c2|default:hero_title }}</span>
+    </nav>
+    <h1>{{ hero_title }}</h1>
+    {% if hero_text %}<p class="page-hero__text">{{ hero_text }}</p>{% endif %}
+  </div>
+</section>

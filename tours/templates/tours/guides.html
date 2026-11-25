@@ -1,0 +1,21 @@
+{% extends "tours/base.html" %}
+{% load tour_tags %}
+
+{% block title %}Tanzania Travel Guides & Tips | {{ site.company_name }}{% endblock %}
+{% block description %}Travel guides and tips for Kilimanjaro, Tanzania safaris and Zanzibar from our local team in Moshi.{% endblock %}
+
+{% block content %}
+{% include "tours/partials/page_hero.html" with hero_title="Travel guides" hero_text="Tips and stories from our team at the foot of Kilimanjaro." %}
+
+<section class="section">
+  <div class="container">
+    {% if pages %}
+    <div class="grid grid--3">
+      {% for p in pages %}<a class="post" href="{{ p.get_absolute_url }}"><img src="{% img p.image %}" alt="" loading="lazy" width="600" height="400"><h3>{{ p.title }}</h3><p>{{ p.intro }}</p></a>{% endfor %}
+    </div>
+    {% else %}
+    <p class="empty">Our first travel guides are coming soon. In the meantime, have a look at the <a href="{% url 'faq' %}">travel FAQ</a> or <a href="{% url 'contact' %}">ask us anything</a>.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

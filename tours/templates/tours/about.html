@@ -1,0 +1,50 @@
+{% extends "tours/base.html" %}
+{% load tour_tags %}
+
+{% block title %}About Us – Maasai-Owned Tour Operator in Moshi | {{ site.company_name }}{% endblock %}
+{% block description %}{{ site.company_name }} is a locally owned, Maasai-owned tour company in Moshi and Arusha, running private safaris and Kilimanjaro climbs since {{ site.founded_year }}.{% endblock %}
+
+{% block content %}
+{% include "tours/partials/page_hero.html" with hero_title="About us" hero_text=site.tagline hero_image=site.about_image %}
+
+<section class="section">
+  <div class="container about">
+    <div class="about__text">
+      <p class="eyebrow">Our story</p>
+      <h2>{{ site.about_title }}</h2>
+      {% for p in site.about_paragraphs %}<p>{{ p }}</p>{% endfor %}
+    </div>
+    <div class="about__media">
+      <img src="{% img site.about_image %}" alt="Our team with one of our safari vehicles" loading="lazy" width="640" height="480">
+      <ul class="about__stats">
+        <li><strong>{{ site.founded_year }}</strong><span>founded</span></li>
+        <li><strong>{{ site.stat_travellers }}</strong><span>travellers</span></li>
+        <li><strong>{{ site.stat_rating }}★</strong><span>rating</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="section section--sand">
+  <div class="container">
+    <div class="section__head section__head--center"><p class="eyebrow">Our values</p><h2>Why travellers choose us</h2></div>
+    <ul class="features features--4">
+      <li><svg class="i"><use href="#i-compass"/></svg><h3>Local expertise</h3><p>Our team lives and works in Tanzania and knows every park, route and hidden gem.</p></li>
+      <li><svg class="i"><use href="#i-users"/></svg><h3>Professional guides</h3><p>Trained safari guides and mountain crews who put your safety and comfort first.</p></li>
+      <li><svg class="i"><use href="#i-heart"/></svg><h3>Personal itineraries</h3><p>Flexible trips for solo travellers, couples, families and groups.</p></li>
+      <li><svg class="i"><use href="#i-leaf"/></svg><h3>Giving back</h3><p>We support local schools, fair employment and conservation.</p></li>
+    </ul>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section__head section__head--center"><h2>What we do</h2></div>
+    <div class="cat-grid">
+      {% for c in categories %}
+      <a class="cat-tile" href="{{ c.get_absolute_url }}"><img src="{% img c.image %}" alt="{{ c.name }}" loading="lazy" width="600" height="400"><span class="cat-tile__name">{{ c.name }}</span></a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

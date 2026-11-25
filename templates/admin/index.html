@@ -1,0 +1,55 @@
+{% extends 'admin/base.html' %}
+{% load i18n unfold %}
+
+{% block title %}Dashboard | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block branding %}
+    {% include "unfold/helpers/site_branding.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-6">
+    <div>
+        <h1 class="font-semibold text-xl text-important">Karibu! Welcome back{% if request.user.first_name %}, {{ request.user.first_name }}{% endif %}.</h1>
+        <p class="text-subtle">Here is what is happening on the website today.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1.25rem">
+        {% for k in kpis %}
+            {% component "unfold/components/card.html" with href=k.href %}
+                <p class="text-subtle">{{ k.title }}</p>
+                <p class="font-semibold text-important" style="font-size:2rem;line-height:1.2">{{ k.value }}</p>
+                <p class="text-subtle text-xs">{{ k.note }}</p>
+            {% endcomponent %}
+        {% endfor %}
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:1.25rem">
+        {% component "unfold/components/card.html" with title="Latest enquiries" %}
+            {% if latest_enquiries.rows %}
+                {% component "unfold/components/table.html" with table=latest_enquiries card_included=1 striped=1 %}{% endcomponent %}
+            {% else %}
+                <p class="text-subtle">No enquiries yet. They will appear here as soon as someone fills a form on the website.</p>
+            {% endif %}
+        {% endcomponent %}
+
+        {% component "unfold/components/card.html" with title="Upcoming group departures" %}
+            {% if upcoming_departures.rows %}
+                {% component "unfold/components/table.html" with table=upcoming_departures card_included=1 striped=1 %}{% endcomponent %}
+            {% else %}
+                <p class="text-subtle">No upcoming departures. Add some under Group departures.</p>
+            {% endif %}
+        {% endcomponent %}
+    </div>
+
+    {% component "unfold/components/card.html" with title="Quick actions" %}
+        <div style="display:flex;flex-wrap:wrap;gap:.75rem">
+            {% for label, href, icon in quick_links %}
+                <a href="{{ href }}" class="border border-base-200 rounded-default px-4 py-2 flex items-center gap-2 hover:border-primary-600 dark:border-base-700">
+                    <span class="material-symbols-outlined text-primary-600">{{ icon }}</span>{{ label }}
+                </a>
+            {% endfor %}
+        </div>
+    {% endcomponent %}
+</div>
+{% endblock %}

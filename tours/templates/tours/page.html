@@ -1,0 +1,32 @@
+{% extends "tours/base.html" %}
+{% load tour_tags %}
+
+{% block title %}{{ page.seo_title }} | {{ site.company_name }}{% endblock %}
+{% block description %}{{ page.seo_description }}{% endblock %}
+{% block og_type %}article{% endblock %}
+
+{% block content %}
+{% if page.kind == 'guide' %}
+{% include "tours/partials/page_hero.html" with hero_title=page.title hero_text=page.intro hero_image=page.image c1="Travel guides" u1="/travel-guides/" c2=page.title %}
+{% else %}
+{% include "tours/partials/page_hero.html" with hero_title=page.title hero_text=page.intro hero_image=page.image %}
+{% endif %}
+
+<section class="section">
+  <div class="container narrow prose">
+    {{ page.body|rich }}
+    <p class="muted small">Last updated {{ page.updated_at|date:"F Y" }}</p>
+  </div>
+</section>
+
+{% if more %}
+<section class="section section--sand">
+  <div class="container">
+    <h2>{% if page.kind == 'guide' %}More travel guides{% else %}More information{% endif %}</h2>
+    <div class="grid grid--3">
+      {% for p in more %}<a class="post" href="{{ p.get_absolute_url }}">{% if p.image %}<img src="{{ p.image.url }}" alt="" loading="lazy" width="600" height="400">{% endif %}<h3>{{ p.title }}</h3><p>{{ p.intro }}</p></a>{% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

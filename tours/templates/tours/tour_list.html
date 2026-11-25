@@ -1,0 +1,24 @@
+{% extends "tours/base.html" %}
+
+{% block title %}All Tanzania Tours & Safaris{% if category_filter %}: {{ category_filter.name }}{% endif %} | {{ site.company_name }}{% endblock %}
+{% block description %}Browse all our Tanzania safaris, Kilimanjaro climbs, Zanzibar holidays, treks and day trips. Filter by length, comfort and price.{% endblock %}
+
+{% block content %}
+{% include "tours/partials/page_hero.html" with hero_title="All tours & safaris" hero_text="Safaris, Kilimanjaro climbs, treks, Zanzibar holidays and day trips" %}
+
+<section class="section">
+  <div class="container">
+    <nav class="pills" aria-label="Trip types">
+      <a href="{% url 'tour_list' %}" class="pill{% if not category_filter %} is-active{% endif %}">All</a>
+      {% for c in categories %}<a href="{% url 'tour_list' %}?category={{ c.slug }}" class="pill{% if category_filter.slug == c.slug %} is-active{% endif %}">{{ c.label }}</a>{% endfor %}
+    </nav>
+    {% include "tours/partials/filters.html" with show_search=True %}
+    <p class="result-count">{{ tours|length }} trip{{ tours|length|pluralize }}</p>
+    <div class="grid grid--cards">
+      {% for t in tours %}{% include "tours/partials/tour_card.html" %}{% empty %}
+      <p class="empty">No trips match your search. <a href="{% url 'tour_list' %}">Show all tours</a> or <a href="{% url 'plan_trip' %}">ask us for a custom trip</a>.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

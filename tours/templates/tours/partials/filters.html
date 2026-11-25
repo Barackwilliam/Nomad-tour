@@ -1,0 +1,43 @@
+<form class="filters" method="get" data-autosubmit>
+  {% if show_categories %}
+  <div class="filters__group">
+    <label for="f-cat">Trip type</label>
+    <select name="category" id="f-cat">
+      <option value="">All trips</option>
+      {% for c in categories %}<option value="{{ c.slug }}"{% if category_filter.slug == c.slug %} selected{% endif %}>{{ c.name }}</option>{% endfor %}
+    </select>
+  </div>
+  {% endif %}
+  <div class="filters__group">
+    <label for="f-days">Duration</label>
+    <select name="days" id="f-days">
+      <option value="">Any length</option>
+      {% for k, label in duration_filters %}<option value="{{ k }}"{% if active.days == k %} selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  {% if levels %}
+  <div class="filters__group">
+    <label for="f-level">Comfort</label>
+    <select name="level" id="f-level">
+      <option value="">Any style</option>
+      {% for k, label in levels %}<option value="{{ k }}"{% if active.level == k %} selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  {% endif %}
+  <div class="filters__group">
+    <label for="f-sort">Sort by</label>
+    <select name="sort" id="f-sort">
+      <option value="">Recommended</option>
+      <option value="price"{% if request.GET.sort == 'price' %} selected{% endif %}>Lowest price</option>
+      <option value="days"{% if request.GET.sort == 'days' %} selected{% endif %}>Shortest first</option>
+    </select>
+  </div>
+  {% if show_search %}
+  <div class="filters__group filters__group--grow">
+    <label for="f-q">Search</label>
+    <input type="search" name="q" id="f-q" value="{{ active.q }}" placeholder="Serengeti, Machame, Zanzibar…">
+  </div>
+  {% endif %}
+  <noscript><button class="btn btn--accent" type="submit">Filter</button></noscript>
+  {% if active %}<a class="filters__reset" href="{{ request.path }}">Clear filters</a>{% endif %}
+</form>

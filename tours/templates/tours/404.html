@@ -1,0 +1,19 @@
+{% extends "tours/base.html" %}
+
+{% block title %}Page not found | {{ site.company_name }}{% endblock %}
+{% block head %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block content %}
+<section class="section thanks">
+  <div class="container narrow center">
+    <p class="eyebrow">Error 404</p>
+    <h1>We lost the trail</h1>
+    <p class="lead">The page you are looking for has moved or no longer exists. Try one of these instead:</p>
+    <div class="btn-row btn-row--center">
+      <a href="{% url 'home' %}" class="btn btn--accent">Home page</a>
+      <a href="{% url 'tour_list' %}" class="btn btn--outline">All tours</a>
+      <a href="{% url 'contact' %}" class="btn btn--outline">Contact us</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
