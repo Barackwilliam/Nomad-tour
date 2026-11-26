@@ -4,7 +4,6 @@ from urllib.parse import quote
 
 from django.conf import settings
 from django.contrib import messages
-from django.core.mail import send_mail
 from django.db.models import F, Min, Q
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -12,7 +11,7 @@ from django.urls import reverse
 from django.views.decorators.cache import cache_control
 from django.views.decorators.http import require_GET
 
-from . import seo
+from . import mailer, seo
 from .cache import cached
 from .seasons import SEASONS
 from .forms import EnquiryForm
@@ -53,16 +52,33 @@ def _notify(enquiry):
         "",
         f"Open in dashboard: {settings.SITE_URL}{reverse('admin:tours_enquiry_change', args=[enquiry.pk])}",
     ]
-    try:
-        send_mail(
-            f"New enquiry: {enquiry.subject} — {enquiry.full_name}",
-            "\n".join(lines),
-            settings.DEFAULT_FROM_EMAIL,
-            [to],
-            fail_silently=False,
+    mailer.send_async(
+        f"New enquiry: {enquiry.subject} — {enquiry.full_name}",
+        "\n".join(lines),
+        [to],
+        reply_to=enquiry.email,  # pressing "Reply" answers the customer directly
+    )
+    if settings.SEND_CUSTOMER_CONFIRMATION and mailer.backend_name() != "none":
+        first = enquiry.full_name.split(" ")[0]
+        body = [
+            f"Dear {first},",
+            "",
+            f"Thank you for contacting {site.company_name}. We have received your enquiry about "
+            f"{enquiry.subject} and our team will reply within 24 hours with availability and a free quote.",
+            "",
+            f"Travel date: {enquiry.travel_date or 'flexible'}",
+            f"Travellers: {enquiry.adults} adults, {enquiry.children} children",
+            "",
+            f"Need a faster answer? Chat with us on WhatsApp: {site.whatsapp_url}",
+            f"Phone: {site.phone}",
+            "",
+            "Asante sana,",
+            site.company_name,
+            settings.SITE_URL,
+        ]
+        mailer.send_async(
+            f"We received your enquiry – {site.company_name}", "\n".join(body), [enquiry.email], reply_to=to
         )
-    except Exception:  # email problems must never lose the enquiry
-        log.exception("Could not send enquiry notification email")
 
 
 def handle_enquiry(request, source, tour=None, departure=None):

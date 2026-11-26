@@ -21,6 +21,9 @@ MEDIA = tempfile.mkdtemp()
 @override_settings(
     MEDIA_ROOT=MEDIA,
     CACHES={"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}},
+    EMAIL_ASYNC=False,
+    BREVO_API_KEY="",
+    EMAIL_HOST="",
 )
 class SiteTests(TestCase):
     @classmethod
@@ -115,6 +118,56 @@ class SiteTests(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn(self.tour.title, mail.outbox[0].subject)
         self.assertContains(self.client.get(reverse("thank_you")), "Jane")
+
+    def _book(self):
+        return self.client.post(
+            self.tour.get_absolute_url(),
+            {"form": "enquiry", "full_name": "Jane Doe", "email": "jane@example.com", "adults": 2},
+        )
+
+    def test_notification_reply_goes_to_customer_and_customer_gets_confirmation(self):
+        with self.settings(EMAIL_HOST="mail.example.com"):
+            self._book()
+        self.assertEqual(len(mail.outbox), 2)
+        notify, confirm = mail.outbox
+        self.assertEqual(notify.reply_to, ["jane@example.com"])
+        self.assertEqual(confirm.to, ["jane@example.com"])
+        self.assertIn("We received your enquiry", confirm.subject)
+
+    def test_brevo_api_is_used_when_key_is_set(self):
+        from unittest import mock
+        import json as _json
+
+        calls = []
+
+        class Res:
+            status = 201
+            def __enter__(self): return self
+            def __exit__(self, *a): return False
+
+        def fake_urlopen(req, timeout=0):
+            calls.append((req.full_url, req.headers, _json.loads(req.data)))
+            return Res()
+
+        with self.settings(BREVO_API_KEY="xkeysib-test"), mock.patch("urllib.request.urlopen", fake_urlopen):
+            self._book()
+        self.assertEqual(len(calls), 2)
+        url, headers, payload = calls[0]
+        self.assertEqual(url, "https://api.brevo.com/v3/smtp/email")
+        self.assertEqual(headers["Api-key"], "xkeysib-test")
+        self.assertEqual(payload["replyTo"]["email"], "jane@example.com")
+        self.assertIn(self.tour.title, payload["subject"])
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_email_failure_never_loses_the_enquiry(self):
+        from unittest import mock
+
+        with self.settings(EMAIL_HOST="mail.example.com"), mock.patch(
+            "django.core.mail.EmailMessage.send", side_effect=OSError("Network unreachable")
+        ):
+            res = self._book()
+        self.assertRedirects(res, reverse("thank_you"))
+        self.assertEqual(Enquiry.objects.count(), 1)
 
     def test_invalid_booking_shows_errors(self):
         res = self.client.post(self.tour.get_absolute_url(), {"form": "enquiry", "full_name": "", "email": "bad"})

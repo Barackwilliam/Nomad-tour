@@ -167,18 +167,24 @@ STORAGES = {
 # Public address of the site, e.g. https://www.nomadexplorertours.com (used for SEO links).
 SITE_URL = (env("SITE_URL") or (f"https://{RENDER_HOST}" if RENDER_HOST else "http://localhost:8000")).rstrip("/")
 
-# Email notifications for new enquiries (optional). Without EMAIL_HOST nothing is sent;
-# enquiries are still saved and shown in the dashboard.
+# Email (see tours/mailer.py). Render's free plan blocks SMTP ports, so there the
+# Brevo HTTPS API is used (BREVO_API_KEY). With EMAIL_HOST set, normal SMTP is used.
+# With neither, emails are only printed to the log.
+BREVO_API_KEY = env("BREVO_API_KEY", "")
 EMAIL_HOST = env("EMAIL_HOST", "")
-EMAIL_PORT = int(env("EMAIL_PORT", "587"))
+EMAIL_PORT = int(env("EMAIL_PORT", "465"))
 EMAIL_HOST_USER = env("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", "")
-EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
-DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER or "no-reply@localhost")
+EMAIL_USE_SSL = env_bool("EMAIL_USE_SSL", EMAIL_PORT == 465)
+EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", not EMAIL_USE_SSL and EMAIL_PORT == 587)
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER or "info@nomadexplorertours.com")
+EMAIL_FROM_NAME = env("EMAIL_FROM_NAME", "Nomad Explorer Tours")
 EMAIL_BACKEND = (
     "django.core.mail.backends.smtp.EmailBackend" if EMAIL_HOST else "django.core.mail.backends.console.EmailBackend"
 )
-EMAIL_TIMEOUT = 15
+EMAIL_TIMEOUT = 20
+EMAIL_ASYNC = env_bool("EMAIL_ASYNC", True)
+SEND_CUSTOMER_CONFIRMATION = env_bool("SEND_CUSTOMER_CONFIRMATION", True)
 ENQUIRY_NOTIFY_EMAIL = env("ENQUIRY_NOTIFY_EMAIL", "")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

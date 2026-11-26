@@ -64,7 +64,7 @@ Render → Settings → Custom domains → ongeza domain ya mteja, kisha weka DN
 ### 4. Baada ya kuwa hewani
 - Google Search Console: ongeza site, weka `google_site_verification` kwenye *Site settings*, kisha tuma `https://www.../sitemap.xml`.
 - Weka Google Analytics ID (G-XXXX) kwenye *Site settings → SEO & analytics*.
-- (Hiari) Weka `EMAIL_HOST...` ili mteja apate email kila enquiry mpya inapoingia.
+- **Email:** weka `BREVO_API_KEY` (Render free plan inazuia SMTP). Kisha Render → Shell: `python manage.py send_test_email` kupima. Kila enquiry inamfikia mteja kwenye `ENQUIRY_NOTIFY_EMAIL`, na mgeni anapokea email ya uthibitisho.
 
 ## Mteja anasimamia nini kwenye dashboard
 
